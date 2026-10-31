@@ -1,0 +1,939 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>미세먼지 데이터 탐험</title>
+<style>
+:root{
+  --bg:#f4f8fb; --card:#ffffff; --ink:#1f2d3d; --sub:#5b6b7c; --line:#d9e3ec;
+  --main:#2f80ed; --main-soft:#e7f0fd; --step:#7b61ff; --radius:22px;
+}
+*{box-sizing:border-box}
+html{font-size:18px}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;line-height:1.55;
+  -webkit-text-size-adjust:100%}
+.wrap{max-width:1100px;margin:0 auto;padding:20px 16px 48px}
+header{text-align:center;padding:18px 8px 8px}
+header h1{margin:0;font-size:2.1rem;letter-spacing:-.02em}
+header h1 span{color:var(--main)}
+header p{margin:6px 0 0;color:var(--sub);font-size:1.05rem}
+.card{background:var(--card);border-radius:var(--radius);padding:22px;margin-top:20px;box-shadow:0 4px 18px rgba(30,60,90,.07)}
+.step{display:inline-block;background:var(--step);color:#fff;border-radius:999px;padding:4px 14px;font-size:.85rem;font-weight:700}
+.card h2{margin:8px 0 14px;font-size:1.45rem}
+.drop{border:3px dashed #b9cde2;border-radius:18px;padding:30px 16px;text-align:center;background:#fafcfe;transition:.15s}
+.drop.over{border-color:var(--main);background:var(--main-soft)}
+.drop .big{font-size:2.6rem;line-height:1}
+.drop p{margin:10px 0}
+.btn{appearance:none;border:0;border-radius:16px;min-height:56px;padding:12px 22px;font:inherit;font-weight:700;
+  font-size:1.05rem;cursor:pointer;background:var(--main);color:#fff;touch-action:manipulation}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:var(--main-soft);color:var(--main)}
+.btn.small{min-height:48px;font-size:.95rem;padding:10px 16px}
+.note{color:var(--sub);font-size:.92rem;margin:12px 0 0}
+.status{margin-top:14px;padding:14px 16px;border-radius:14px;font-weight:700;display:none}
+.status.ok{display:block;background:#e9f7ef;color:#1e7a46}
+.status.err{display:block;background:#fdecec;color:#b42318}
+.types,.rulebtns{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.type{border:3px solid var(--line);background:#fff;border-radius:18px;padding:14px;text-align:left;font:inherit;cursor:pointer;min-height:84px;color:var(--ink);touch-action:manipulation}
+.type b{display:block;font-size:1.15rem}
+.type small{color:var(--sub);font-size:.9rem}
+.type.on{border-color:var(--main);background:var(--main-soft)}
+.pickers{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:16px}
+label.f{display:block;font-weight:700;font-size:1rem}
+label.f select{display:block;width:100%;margin-top:6px;min-height:56px;font:inherit;font-size:1.05rem;border:2px solid var(--line);
+  border-radius:14px;padding:8px 12px;background:#fff;color:var(--ink)}
+.toggle{display:flex;align-items:center;gap:10px;margin-top:14px;font-weight:700;cursor:pointer;min-height:48px}
+.toggle input{width:30px;height:30px;accent-color:var(--main)}
+.chartbox{position:relative;margin-top:18px;border:2px solid var(--line);border-radius:18px;padding:8px;background:#fff}
+canvas{display:block;width:100%;touch-action:none}
+.pick{margin-top:12px;padding:14px 16px;background:#fff8e6;border-radius:14px;font-size:1.02rem;min-height:56px}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center}
+.qs{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.q{background:#f6f3ff;border-radius:16px;padding:14px 16px;font-size:1.02rem}
+.q b{color:var(--step)}
+textarea{width:100%;font:inherit;font-size:1.05rem;border:2px solid var(--line);border-radius:14px;padding:12px;min-height:110px;resize:vertical;color:var(--ink);background:#fff}
+/* 먼저 생각해 보기 질문 */
+.ask{background:#fff3d6;border-radius:18px;padding:16px;margin:0 0 16px}
+.ask .qt{font-weight:800;font-size:1.08rem;margin:0 0 8px}
+.ask textarea{min-height:64px}
+/* 규칙 찾기 */
+.panel{margin-top:18px;border-top:2px dashed var(--line);padding-top:18px}
+.panel h3{margin:0 0 12px;font-size:1.2rem}
+.seg{display:inline-flex;gap:8px;flex-wrap:wrap}
+.seg button{min-width:64px;min-height:56px;border-radius:14px;border:3px solid var(--line);background:#fff;font:inherit;font-weight:800;font-size:1.15rem;cursor:pointer;color:var(--ink);touch-action:manipulation}
+.seg button.on{border-color:var(--main);background:var(--main-soft);color:var(--main)}
+.predict{display:flex;flex-wrap:wrap;align-items:center;gap:10px;font-size:1.05rem}
+.predict input{width:140px;min-height:56px;font:inherit;font-size:1.2rem;border:2px solid var(--line);border-radius:14px;padding:8px 12px}
+.predout{font-size:1.25rem;font-weight:800;color:var(--main)}
+.caution{margin:12px 0 0;padding:12px 16px;border-radius:14px;background:#fff1e6;color:#9a4b00;font-weight:800}
+.info{margin:12px 0 0;font-size:1.02rem}
+.dot{display:inline-block;width:18px;height:18px;border-radius:50%;vertical-align:-3px;margin-right:6px}
+.seedbox{font-size:1.05rem;font-weight:700}
+.seedbox b{font-size:1.3rem;color:var(--step)}
+/* 표 */
+.tablewrap{max-height:420px;overflow:auto;margin-top:12px;border:2px solid var(--line);border-radius:14px}
+table{border-collapse:collapse;width:100%;font-size:.95rem}
+th,td{padding:8px 12px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;vertical-align:top}
+th{position:sticky;top:0;background:var(--main-soft);z-index:1}
+tr.hl td{background:#ffe58a;font-weight:800}
+.dates{white-space:normal;min-width:220px;max-height:130px;overflow:auto}
+.source h2{font-size:1.25rem}
+/* 자료 모으는 곳 */
+.links{margin-top:16px;border:2px solid var(--line);border-radius:18px;background:#fafcfe}
+.links summary{cursor:pointer;min-height:56px;padding:14px 18px;font-weight:800;font-size:1.08rem;list-style:none;display:flex;align-items:center}
+.links summary::-webkit-details-marker{display:none}
+.links summary::after{content:"▼";margin-left:auto;color:var(--sub);font-size:.85rem}
+.links[open] summary::after{content:"▲"}
+.links[open]{padding-bottom:16px}
+.links>*:not(summary){margin-left:16px;margin-right:16px}
+.linkgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.lk{display:block;text-decoration:none;color:var(--ink);background:#fff;border:3px solid var(--line);border-radius:16px;padding:14px 16px;min-height:56px}
+.lk:active,.lk:hover{border-color:var(--main);background:var(--main-soft)}
+.lk b{display:block;font-size:1.05rem;color:var(--main)}
+.lk small{display:block;color:var(--sub);font-size:.85rem;margin:2px 0 6px}
+.lk span{font-size:.95rem}
+.lkbox{display:flex;flex-direction:column;gap:6px}
+.lkbox .lk{flex:1}
+.lkurl{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.lkurl code{flex:1;min-width:0;font-size:.78rem;color:var(--sub);word-break:break-all;background:#eef3f8;border-radius:8px;padding:6px 8px}
+.lkurl button{min-height:44px;border:2px solid var(--line);background:#fff;border-radius:12px;font:inherit;font-size:.9rem;font-weight:700;padding:6px 12px;cursor:pointer;color:var(--ink)}
+.howto{margin-top:14px;background:#f6f3ff;border-radius:16px;padding:14px 16px}
+.howto ol{margin:8px 0 0;padding-left:1.4em}
+.howto li{margin:4px 0}
+/* 시작 안내 */
+.intro{background:linear-gradient(135deg,#eaf3ff,#f3efff)}
+.intro .now{margin:0;font-size:1.05rem}
+.intro .now b{color:var(--main)}
+.introtext{margin:8px 0 0;font-size:1.08rem}
+/* 탐험 순서 */
+.mission{background:#e9f7ef;border-radius:18px;padding:16px;margin:0 0 16px}
+.mission .qt{font-weight:800;font-size:1.08rem;margin:0 0 10px}
+.mission .qt small{display:block;font-weight:600;color:var(--sub);font-size:.88rem}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.mbtn{border:3px solid #bfe3cc;background:#fff;border-radius:16px;padding:12px 14px;text-align:left;font:inherit;cursor:pointer;min-height:72px;color:var(--ink);touch-action:manipulation}
+.mbtn:active{border-color:#27ae60}
+.mbtn b{display:block;font-size:1.05rem;color:#1e7a46}
+.mbtn small{color:var(--sub);font-size:.88rem}
+/* 나의 해석 */
+.interp{display:grid;gap:14px;margin-top:18px}
+.interp textarea{margin-top:6px;min-height:90px;font-weight:400}
+.interp input{display:block;width:100%;margin-top:6px;min-height:56px;font:inherit;font-size:1.05rem;font-weight:400;border:2px solid var(--line);border-radius:14px;padding:8px 12px;color:var(--ink)}
+.outimg{display:block;width:100%;border:2px solid var(--line);border-radius:14px;background:#fff}
+#outBox .howto{margin-top:14px}
+.lock{text-align:center;color:var(--sub);font-size:.9rem;margin-top:22px}
+.hide{display:none!important}
+@media (max-width:640px){
+  html{font-size:17px}
+  .types,.rulebtns{grid-template-columns:1fr}
+  header h1{font-size:1.75rem}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🌫️ 미세먼지 <span>데이터 탐험</span></h1>
+    <p>우리 동네와 다른 동네의 미세먼지를 그래프로 견주어 봐요</p>
+  </header>
+
+  <!-- 시작 안내 -->
+  <section class="card intro" id="intro">
+    <p class="now">📊 지금 보는 자료: <b id="nowName">예시 자료</b></p>
+    <p class="introtext" id="introText">이 도구에는 <b>서울 중구 · 서울 종로구 · 부산 연산동</b>의 2026년 3~4월 하루 평균 미세먼지(PM10) 자료가 들어 있어요.<br>측정값이 적은 날은 빈칸으로 두었어요.<br>아래 <b>1단계</b>부터 차례로 탐험해 보세요! 🧭</p>
+    <div class="row">
+      <button class="btn ghost small hide" id="backSample" type="button">🌱 예시 자료로 돌아가기</button>
+      <button class="btn ghost small" id="goOwn" type="button">🚀 내가 찾은 자료로 해 보기</button>
+    </div>
+  </section>
+
+  <!-- 2단계 -->
+  <section class="card" id="step2">
+    <span class="step">1단계</span>
+    <h2>📊 그래프로 나타내기</h2>
+    <div class="ask">
+      <p class="qt">🤔 두 동네의 미세먼지는 어떻게 움직일까요? 먼저 예상해 보세요.</p>
+      <textarea placeholder="예) 우리 동네가 높으면 옆 동네도 높을 것 같아요."></textarea>
+    </div>
+    <div class="mission hide" id="mission">
+      <p class="qt">🧭 이 순서로 탐험해 보세요 <small>(서울 중구와 종로구는 바로 옆 동네, 부산 연산동은 약 320km 떨어진 곳이에요)</small></p>
+      <div class="mgrid">
+        <button class="mbtn" id="m1" type="button"><b>① 세 곳을 날짜별로 보기</b><small>꺾은선그래프 · 세 선이 함께 오르내리나요?</small></button>
+        <button class="mbtn" id="m2" type="button"><b>② 가까운 두 곳 견주기</b><small>점그래프 · 서울 중구 ↔ 서울 종로구</small></button>
+        <button class="mbtn" id="m3" type="button"><b>③ 먼 두 곳 견주기</b><small>점그래프 · 서울 중구 ↔ 부산 연산동</small></button>
+      </div>
+      <p class="note" style="margin-top:10px">②와 ③의 점 모양을 비교해 보세요. 어느 쪽이 더 한 줄로 모여 있나요?</p>
+    </div>
+    <div class="types">
+      <button class="type on" data-type="line" type="button"><b>📈 꺾은선그래프</b><small>날짜에 따라 어떻게 변했을까?</small></button>
+      <button class="type" data-type="scatter" type="button"><b>🔵 점그래프</b><small>두 동네를 나란히 견주어 볼까?</small></button>
+    </div>
+    <div class="pickers">
+      <label class="f">↔️ 가로축 <select id="selX"></select></label>
+      <label class="f">↕️ 세로축 <select id="selY"></select></label>
+      <label class="f" id="wrapY2">➕ 함께 그릴 선 (고르지 않아도 돼요) <select id="selY2"></select></label>
+      <label class="f" id="wrapY3">➕ 하나 더 그릴 선 (고르지 않아도 돼요) <select id="selY3"></select></label>
+      <label class="f hide" id="wrapG">🎨 색으로 나누기 (고르지 않아도 돼요) <select id="selG"></select></label>
+    </div>
+    <label class="toggle hide" id="wrapGuide"><input type="checkbox" id="guide"> 두 값이 똑같은 곳에 줄 긋기</label>
+
+    <div class="chartbox"><canvas id="chart" aria-label="그래프"></canvas></div>
+    <div class="pick" id="pick">👆 그래프의 점을 손가락으로 누르면 자세한 값이 여기에 나와요.</div>
+    <div class="row">
+      <button class="btn ghost small" id="saveBtn" type="button">📸 그래프만 그림으로 저장하기</button>
+    </div>
+  </section>
+
+  <!-- 3단계 규칙 찾기 -->
+  <section class="card">
+    <span class="step">2단계</span>
+    <h2>✨ 규칙 찾기</h2>
+    <p class="note" style="margin:0 0 14px">점그래프에서 쓸 수 있어요. 숫자로 된 열이 두 개 필요해요. <b>켠 버튼을 다시 누르면 꺼져요.</b></p>
+    <div class="rulebtns">
+      <button class="type" id="trendBtn" type="button"><b>📈 추세선</b><small>점들이 어느 쪽으로 가는지 줄 하나로 나타내요</small></button>
+      <button class="type" id="kmBtn" type="button"><b>🧩 끼리끼리 묶기</b><small>가까이 있는 점끼리 무리를 지어요</small></button>
+    </div>
+    <div class="status" id="ruleMsg"></div>
+
+    <!-- 추세선 -->
+    <div class="panel hide" id="trendPanel">
+      <div class="ask">
+        <p class="qt">🤔 내 예상과 무엇이 같고 무엇이 다른가요?</p>
+        <textarea placeholder="같은 점, 다른 점을 짧게 적어 보세요."></textarea>
+      </div>
+      <h3>📈 추세선으로 예측해 보기</h3>
+      <div class="predict">
+        <span>가로축 <b id="pxName">-</b> 값이</span>
+        <input type="number" id="predX" inputmode="decimal" placeholder="숫자">
+        <span>일 때</span>
+        <button class="btn small" id="predBtn" type="button">예측하기</button>
+      </div>
+      <p class="info">→ 세로축 <b id="pyName">-</b> 값은 <span class="predout" id="predOut">?</span></p>
+      <p class="caution">⚠️ 예측은 실제와 다를 수 있어요.</p>
+      <p class="info" id="trendInfo"></p>
+    </div>
+
+    <!-- 끼리끼리 묶기 -->
+    <div class="panel hide" id="kmPanel">
+      <h3>🧩 끼리끼리 묶기</h3>
+      <div class="row" style="margin-top:0">
+        <span style="font-weight:700">몇 무리로 나눌까요?</span>
+        <div class="seg" id="kSeg">
+          <button type="button" data-k="2" class="on">2</button>
+          <button type="button" data-k="3">3</button>
+          <button type="button" data-k="4">4</button>
+        </div>
+      </div>
+      <div class="row">
+        <span class="seedbox">시작 위치 <b id="seedNo">1</b>번</span>
+        <button class="btn small" id="shuffleBtn" type="button">🔄 다시 섞기</button>
+      </div>
+      <p class="note">시작 위치가 바뀌면 무리가 다르게 나뉠 수도 있어요. ✕ 표시는 무리의 가운데예요.</p>
+      <div class="ask hide" id="askShuffle" style="margin-top:16px">
+        <p class="qt">🤔 결과가 달라진 까닭은 무엇일까요?</p>
+        <textarea placeholder="다시 섞기 전과 비교해서 적어 보세요."></textarea>
+      </div>
+      <div class="tablewrap" id="kmTable" style="max-height:none"></div>
+    </div>
+  </section>
+
+  <!-- 원본 자료 표 -->
+  <section class="card">
+    <h2>🔍 원본 자료 표</h2>
+    <p class="note" style="margin:0">그래프의 점을 누르면 그 날짜가 <b style="background:#ffe58a">노랗게</b> 표시돼요.</p>
+    <div class="tablewrap" id="tableWrap"><p style="padding:14px;margin:0">📂 자료를 불러와 주세요.</p></div>
+  </section>
+
+  <!-- 4단계 -->
+  <section class="card">
+    <span class="step">3단계</span>
+    <h2>📝 나의 데이터 해석</h2>
+    <p style="margin:0 0 10px;font-weight:700">💬 이런 질문을 떠올리며 적어 보세요</p>
+    <div class="qs">
+      <div class="q"><b>질문 1</b><br>두 동네의 선이 <b>함께 올라가고 함께 내려가나요?</b></div>
+      <div class="q"><b>질문 2</b><br>점그래프에서 점들이 <b>한 줄로 모여 있나요,</b> 여기저기 흩어져 있나요?</div>
+      <div class="q"><b>질문 3</b><br>세 곳이 모두 높았던 날을 찾아보세요. 멀리 떨어진 곳까지 함께 높아진 까닭은 무엇일까요?</div>
+      <div class="q"><b>질문 4</b><br>"공기는 동네끼리 이어져 있다"고 말할 수 있을까요? <b>그래프에서 찾은 까닭</b>은?</div>
+    </div>
+    <div class="interp">
+      <label class="f">🙋 이름 (또는 모둠)<input id="who" type="text" placeholder="예) 3모둠 김하늘"></label>
+      <label class="f">👀 그래프에서 본 것<textarea id="seen" placeholder="예) 우리 동네 값이 높은 날은 옆 동네 값도 높았어요."></textarea></label>
+      <label class="f">💡 나의 해석 — 이 자료가 알려 주는 것은 무엇일까요?<textarea id="interp" placeholder="그래프를 보고 내가 생각한 것을 적어 보세요."></textarea></label>
+      <label class="f">🔎 그렇게 생각한 까닭 — 그래프의 어느 부분을 보고 알았나요?<textarea id="why" placeholder="예) 점들이 오른쪽 위로 올라가는 줄 모양으로 모여 있어서요."></textarea></label>
+    </div>
+    <button class="btn" id="reportBtn" type="button" style="width:100%;margin-top:16px;font-size:1.15rem;min-height:64px">🖼️ 그래프와 나의 해석을 한 장의 그림으로 만들기</button>
+    <div class="status" id="repMsg"></div>
+
+    <div class="hide" id="outBox">
+      <p style="margin:18px 0 8px;font-weight:800">✅ 그림이 만들어졌어요! 확인해 보세요.</p>
+      <img id="outImg" alt="그래프와 나의 해석" class="outimg">
+      <div class="row">
+        <button class="btn" id="dlBtn" type="button">💾 그림 저장하기</button>
+        <button class="btn hide" id="shareBtn" type="button" style="background:var(--step)">📤 패들렛으로 바로 보내기</button>
+      </div>
+      <p class="note">그림을 손가락으로 꾹 누르면 사진에 바로 저장할 수도 있어요.</p>
+      <div class="howto">
+        <b>📌 패들렛에 올리는 방법</b>
+        <ol>
+          <li>'💾 그림 저장하기'를 눌러 그림을 저장해요.</li>
+          <li>선생님이 알려 준 패들렛에 들어가서 <b>＋</b> 버튼을 눌러요.</li>
+          <li><b>업로드</b>(또는 사진)를 누르고 방금 저장한 그림을 골라요.</li>
+          <li>제목에 이름을 적고 <b>게시</b>를 눌러요.</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- 내가 찾은 자료 -->
+  <section class="card" id="ownCard">
+    <span class="step" style="background:#27ae60">더 해 보기</span>
+    <h2>🚀 내가 찾은 자료로 탐험하기</h2>
+    <p class="note" style="margin:0 0 14px">예시 자료로 탐험을 마쳤다면, 우리 동네 자료를 직접 찾아서 같은 방법으로 살펴보세요.</p>
+    <details class="links">
+      <summary>① 미세먼지 자료는 어디에서 모을까요?</summary>
+      <div class="linkgrid">
+        <a class="lk" href="https://www.airkorea.or.kr/web/stationInfo?pMENU_NO=93" target="_blank" rel="noopener noreferrer">
+          <b>① 우리 동네 측정소 찾기</b><small>에어코리아 · 측정소 정보</small>
+          <span>우리 동네와 옆 동네에서 가까운 측정소 이름을 먼저 찾아요.</span></a>
+        <a class="lk" href="https://www.airkorea.or.kr/web/autoStatistic?pMENU_NO=123" target="_blank" rel="noopener noreferrer">
+          <b>② 지난 미세먼지 값 보기</b><small>에어코리아 · 최종확정 측정자료 조회</small>
+          <span>항목(PM-10 또는 PM-2.5), 지역, 측정소, 기간을 고르고 '검색'을 눌러요.</span></a>
+        <a class="lk" href="https://www.airkorea.or.kr/web/last_amb_hour_data?pMENU_NO=123" target="_blank" rel="noopener noreferrer">
+          <b>③ 한 해 자료 한꺼번에 받기</b><small>에어코리아 · 확정자료 다운로드 (선생님용)</small>
+          <span>전국 자료가 한 파일에 들어 있어 아주 커요. 필요한 측정소만 골라 써요.</span></a>
+        <a class="lk" href="https://www.airkorea.or.kr/web/" target="_blank" rel="noopener noreferrer">
+          <b>④ 지금 공기 살펴보기</b><small>에어코리아 첫 화면</small>
+          <span>오늘 우리 동네 공기가 어떤지 바로 확인해요.</span></a>
+      </div>
+      <div class="howto">
+        <b>✏️ 내 자료로 만드는 방법</b>
+        <ol>
+          <li>엑셀 첫 줄에 열 이름을 적어요. <br>예) 날짜 · 우리 동네 미세먼지 · 옆 동네 미세먼지 · 계절</li>
+          <li>두 측정소의 값을 같은 날짜끼리 한 줄에 적어요.</li>
+          <li>'다른 이름으로 저장'에서 <b>CSV</b>를 골라 저장한 뒤, 아래 ② 칸에 끌어다 놓아요.</li>
+          <li>아래 <b>자료 출처</b> 칸에 사이트 이름, 측정소 이름, 기간을 적어요.</li>
+        </ol>
+      </div>
+      <p class="note">⏳ 에어코리아는 가끔 느리거나 안 열릴 수 있어요. 그럴 땐 잠시 뒤에 다시 해 보세요.</p>
+      <p class="note">링크를 누르면 인터넷 사이트가 새 탭으로 열려요. 이 도구는 불러온 자료를 어디에도 보내지 않아요.</p>
+    </details>
+    <p style="margin:18px 0 8px;font-weight:800;font-size:1.08rem">② 내 자료 불러오기</p>
+    <div class="drop" id="drop">
+      <div class="big">📄</div>
+      <p><b>CSV 파일을 여기에 끌어다 놓으세요</b></p>
+      <p>또는</p>
+      <button class="btn" id="pickBtn" type="button">파일 찾아서 고르기</button>
+      <input type="file" id="file" accept=".csv,.txt,text/csv" class="hide">
+    </div>
+    <p class="note">엑셀에서 저장한 한글 CSV도 그대로 불러올 수 있어요. 파일은 이 기기 밖으로 나가지 않아요.</p>
+    <div class="status" id="status"></div>
+  </section>
+
+  <!-- 자료 출처 -->
+  <section class="card source">
+    <h2>📌 자료 출처</h2>
+    <textarea id="src" placeholder="예) 에어코리아, 측정소 이름, 자료를 받은 날짜" style="min-height:80px"></textarea>
+    <p class="note">자료를 어디에서 가져왔는지 꼭 적어 두어요. 그림으로 저장할 때 함께 들어가요.</p>
+  </section>
+
+  <p class="lock">🔒 불러온 자료는 이 기기 안에서만 쓰여요. 인터넷으로 보내지 않아요.</p>
+</div>
+
+<script>
+(function(){
+"use strict";
+var $=function(id){return document.getElementById(id)};
+var COLORS=["#2f80ed","#f2994a","#27ae60","#9b51e0","#eb5757","#00a3a3","#c08a00","#6b7a8f"];
+var KCOLORS=["#e2574c","#2f80ed","#27ae60","#f2a20c"];
+var S={headers:[],rows:[],numeric:[],file:"",type:"line",x:-1,y:-1,y2:-1,y3:-1,g:-1,sample:false,guide:false,pts:[],
+  trend:false,km:false,k:2,seed:1,fit:null,kmRes:null,predX:null,xmin:null,xmax:null,sel:-1};
+
+/* ---------- 저장(이 기기 안) : 발견한 것·출처만 ---------- */
+function store(k,v){try{localStorage.setItem("dust-"+k,v)}catch(e){}}
+function load(k){try{return localStorage.getItem("dust-"+k)||""}catch(e){return ""}}
+["who","seen","interp","why","src"].forEach(function(id){var el=$(id);el.value=load(id);el.addEventListener("input",function(){store(id,el.value)})});
+
+/* ---------- 파일 읽기 ---------- */
+function decode(buf){
+  var u=new Uint8Array(buf);
+  if(u[0]===0xEF&&u[1]===0xBB&&u[2]===0xBF) return new TextDecoder("utf-8").decode(u.subarray(3));
+  try{return new TextDecoder("utf-8",{fatal:true}).decode(u)}
+  catch(e){return new TextDecoder("euc-kr").decode(u)}
+}
+function parseCSV(t){
+  t=t.replace(/^﻿/,"");
+  var first=t.split(/\r?\n/)[0]||"";
+  var d=[",","\t",";"].map(function(c){return [c,first.split(c).length]}).sort(function(a,b){return b[1]-a[1]})[0][0];
+  var rows=[],row=[],f="",q=false;
+  for(var i=0;i<t.length;i++){
+    var c=t[i];
+    if(q){ if(c==='"'){ if(t[i+1]==='"'){f+='"';i++}else q=false } else f+=c }
+    else if(c==='"') q=true;
+    else if(c===d){row.push(f);f=""}
+    else if(c==="\n"||c==="\r"){ if(c==="\r"&&t[i+1]==="\n")i++; row.push(f);rows.push(row);row=[];f="" }
+    else f+=c;
+  }
+  if(f!==""||row.length){row.push(f);rows.push(row)}
+  return rows.map(function(r){return r.map(function(s){return s.trim()})}).filter(function(r){return r.some(function(s){return s!==""})});
+}
+function num(s){
+  if(s==null) return null;
+  s=String(s).replace(/,/g,"").trim();
+  if(s===""||s==="-"||s==="—") return null;
+  var n=Number(s); return isFinite(n)?n:null;
+}
+function say(msg,ok){var el=$("status");el.textContent=msg;el.className="status "+(ok?"ok":"err")}
+function ruleSay(msg,ok){var el=$("ruleMsg");if(!msg){el.className="status";return}el.textContent=msg;el.className="status "+(ok?"ok":"err")}
+
+function readFile(file){
+  if(!file) return;
+  if(!/\.(csv|txt)$/i.test(file.name)){say("CSV 파일만 불러올 수 있어요. 엑셀에서 'CSV'로 저장해 주세요.");return}
+  var r=new FileReader();
+  r.onload=function(){loadText(decode(r.result),file.name,false)};
+  r.onerror=function(){say("파일을 읽지 못했어요. 다시 골라 주세요.")};
+  r.readAsArrayBuffer(file);
+}
+function loadText(text,name,isSample){
+    var rows=parseCSV(text);
+    if(rows.length<2){say("파일에 자료가 없어요. 첫 줄에 열 이름, 그 아래에 자료가 있는지 확인해 주세요.");return}
+    var w=Math.max.apply(null,rows.map(function(x){return x.length}));
+    var head=rows[0].slice();while(head.length<w)head.push("");
+    head=head.map(function(h,i){return h||("열 "+(i+1))});
+    var body=rows.slice(1).map(function(x){x=x.slice();while(x.length<w)x.push("");return x});
+    var numeric=head.map(function(_,c){
+      var filled=0,ok=0;
+      body.forEach(function(rw){var v=rw[c];if(v!==""&&v!=="-"){filled++;if(num(v)!==null)ok++}});
+      return filled>0&&ok/filled>=0.8;
+    });
+    if(numeric.indexOf(true)<0){say("숫자로 된 열이 없어서 그래프를 그릴 수 없어요.");return}
+    S.headers=head;S.rows=body;S.numeric=numeric;S.file=name;S.sel=-1;S.sample=!!isSample;
+    S.trend=false;S.km=false;S.predX=null;ruleSay("");
+    if(S.type!=="line"){S.type="line";document.querySelectorAll(".types .type").forEach(function(x){x.classList.toggle("on",x.dataset.type==="line")})}
+    chooseDefaults();fillSelects();buildTable();resetPick();draw();
+    $("mission").classList.toggle("hide",!isSample);
+    if(isSample){
+      say("✅ 예시 자료를 불러왔어요.",true);
+      var src=$("src");if(!src.value.trim()||src.value.indexOf("에어코리아, 서울 중구")===0){src.value=SAMPLE_SOURCE;store("src",src.value)}
+    }else{
+      say("✅ '"+name+"' 자료를 불러왔어요. (자료 "+body.length+"줄, 열 "+head.length+"개) 위로 올라가 1단계부터 살펴보세요!",true);
+      setTimeout(function(){$("intro").scrollIntoView({behavior:"smooth",block:"start"})},900);
+    }
+    $("nowName").textContent=isSample?"예시 자료 (서울 중구 · 서울 종로구 · 부산 연산동)":"내가 불러온 자료 '"+name+"'";
+    $("introText").innerHTML=isSample?INTRO_SAMPLE:"내가 찾은 자료로 탐험하고 있어요. 아래 <b>1단계</b>부터 같은 방법으로 살펴보세요! 🧭";
+    $("backSample").classList.toggle("hide",!!isSample);
+}
+
+/* ---------- 예시 자료: 에어코리아, 서울 중구·서울 종로구·부산 연산동 측정소, 2026년 3~4월 일평균 PM10(㎍/㎥), 확정 전 자료
+   (시간값으로 하루 평균을 내고 소수 첫째 자리에서 반올림. 측정값이 적은 날은 빈칸: 부산 연산동 3/5(13시간), 3/6(9시간)) ---------- */
+var SAMPLE_SOURCE="에어코리아, 서울 중구·서울 종로구·부산 연산동 측정소, 2026년 3~4월 일평균 PM10(㎍/㎥), 확정 전 자료";
+var SAMPLE_CSV=["날짜,월,서울 중구,서울 종로구,부산 연산동",
+"2026-03-01,3월,22,19,26","2026-03-02,3월,6,4,16","2026-03-03,3월,6,4,8","2026-03-04,3월,25,24,14","2026-03-05,3월,51,50,",
+"2026-03-06,3월,41,40,","2026-03-07,3월,30,29,28","2026-03-08,3월,32,30,18","2026-03-09,3월,56,55,31","2026-03-10,3월,49,50,48",
+"2026-03-11,3월,43,45,41","2026-03-12,3월,53,49,27","2026-03-13,3월,24,21,17","2026-03-14,3월,25,25,19","2026-03-15,3월,49,47,29",
+"2026-03-16,3월,70,68,33","2026-03-17,3월,80,75,29","2026-03-18,3월,55,57,21","2026-03-19,3월,30,32,41","2026-03-20,3월,43,41,30",
+"2026-03-21,3월,58,53,37","2026-03-22,3월,47,41,26","2026-03-23,3월,56,49,44","2026-03-24,3월,54,50,83","2026-03-25,3월,42,40,53",
+"2026-03-26,3월,67,70,57","2026-03-27,3월,88,87,82","2026-03-28,3월,73,72,68","2026-03-29,3월,53,51,57","2026-03-30,3월,54,52,50",
+"2026-03-31,3월,23,21,13","2026-04-01,4월,30,29,28","2026-04-02,4월,67,68,32","2026-04-03,4월,70,70,41","2026-04-04,4월,29,31,15",
+"2026-04-05,4월,41,41,28","2026-04-06,4월,28,28,48","2026-04-07,4월,27,28,16","2026-04-08,4월,35,36,22","2026-04-09,4월,23,19,16",
+"2026-04-10,4월,26,25,23","2026-04-11,4월,45,45,20","2026-04-12,4월,50,47,27","2026-04-13,4월,38,37,38","2026-04-14,4월,50,51,39",
+"2026-04-15,4월,68,66,32","2026-04-16,4월,30,29,32","2026-04-17,4월,36,34,29","2026-04-18,4월,42,43,17","2026-04-19,4월,60,62,20",
+"2026-04-20,4월,84,82,26","2026-04-21,4월,117,122,87","2026-04-22,4월,71,74,49","2026-04-23,4월,36,34,35","2026-04-24,4월,27,27,26",
+"2026-04-25,4월,38,37,21","2026-04-26,4월,26,26,24","2026-04-27,4월,35,31,31","2026-04-28,4월,23,24,33","2026-04-29,4월,21,22,19",
+"2026-04-30,4월,29,30,13"].join("\n");
+function loadSample(){loadText(SAMPLE_CSV,"예시 자료",true)}
+var INTRO_SAMPLE=$("introText").innerHTML;
+$("backSample").addEventListener("click",function(){loadSample();$("intro").scrollIntoView({behavior:"smooth",block:"start"})});
+$("goOwn").addEventListener("click",function(){$("ownCard").querySelector("details").open=true;$("ownCard").scrollIntoView({behavior:"smooth",block:"start"})});
+function preset(type,xName,yName){
+  if(!S.sample)loadSample();
+  setType(type);
+  if(xName!=null)S.x=S.headers.indexOf(xName);
+  if(yName!=null)S.y=S.headers.indexOf(yName);
+  if(type==="scatter")S.g=S.headers.indexOf("월");
+  fillSelects();resetPick();draw();
+}
+$("m1").addEventListener("click",function(){preset("line")});
+$("m2").addEventListener("click",function(){preset("scatter","서울 중구","서울 종로구")});
+$("m3").addEventListener("click",function(){preset("scatter","서울 중구","부산 연산동")});
+
+/* ---------- 고르기 ---------- */
+function numCols(){var a=[];S.numeric.forEach(function(v,i){if(v)a.push(i)});return a}
+function textCols(){var a=[];S.numeric.forEach(function(v,i){if(!v)a.push(i)});return a}
+function dateCol(){
+  var d=S.headers.findIndex(function(h){return /날짜|일시|일자|date/i.test(h)});
+  if(d>=0)return d;var t=textCols();return t.length?t[0]:-1;
+}
+function rowName(ri){var d=dateCol();return d>=0&&S.rows[ri][d]?S.rows[ri][d]:(ri+1)+"번째 줄"}
+function chooseDefaults(){
+  var n=numCols(),t=textCols();
+  if(S.type==="line"){
+    S.x=t.length?t[0]:0;
+    var ys=n.filter(function(i){return i!==S.x});
+    S.y=ys[0]!=null?ys[0]:-1; S.y2=ys[1]!=null?ys[1]:-1; S.y3=ys[2]!=null?ys[2]:-1;
+  }else{
+    S.x=n[0]!=null?n[0]:-1; S.y=n[1]!=null?n[1]:-1;
+    S.g=-1;
+    t.forEach(function(c){
+      if(S.g>=0)return;
+      var u={};S.rows.forEach(function(r){if(r[c])u[r[c]]=1});
+      var k=Object.keys(u).length; if(k>=2&&k<=8)S.g=c;
+    });
+  }
+}
+function opts(sel,list,val,blank){
+  sel.innerHTML="";
+  if(blank){var o=document.createElement("option");o.value="-1";o.textContent=blank;sel.appendChild(o)}
+  list.forEach(function(i){var o=document.createElement("option");o.value=i;o.textContent=S.headers[i];sel.appendChild(o)});
+  sel.value=String(val);
+  if(sel.value==="") sel.value=list.length?String(list[0]):"-1";
+}
+function fillSelects(){
+  var has=S.headers.length>0;
+  var all=S.headers.map(function(_,i){return i}),n=numCols(),t=textCols();
+  var line=S.type==="line";
+  $("wrapY2").classList.toggle("hide",!line);
+  $("wrapY3").classList.toggle("hide",!line);
+  $("wrapG").classList.toggle("hide",line);
+  $("wrapGuide").classList.toggle("hide",line);
+  if(!has){["selX","selY","selY2","selY3","selG"].forEach(function(id){$(id).innerHTML='<option>자료를 먼저 불러와 주세요</option>'});return}
+  opts($("selX"),line?all:n,S.x);
+  opts($("selY"),n,S.y);
+  opts($("selY2"),n,S.y2,"고르지 않기");
+  opts($("selY3"),n,S.y3,"고르지 않기");
+  opts($("selG"),t,S.g,"고르지 않기");
+  readSel();
+}
+function readSel(){S.x=+$("selX").value;S.y=+$("selY").value;S.y2=+$("selY2").value;S.y3=+$("selY3").value;S.g=+$("selG").value}
+function setType(t){
+  S.type=t;
+  document.querySelectorAll(".types .type").forEach(function(x){x.classList.toggle("on",x.dataset.type===t)});
+  if(t==="line"){S.trend=false;S.km=false;updateRuleUI();ruleSay("")}
+  if(S.headers.length)chooseDefaults();
+  fillSelects();resetPick();draw();
+}
+document.querySelectorAll(".types .type").forEach(function(b){
+  b.addEventListener("click",function(){setType(b.dataset.type)});
+});
+["selX","selY","selY2","selY3","selG"].forEach(function(id){
+  $(id).addEventListener("change",function(){
+    readSel();resetPick();draw();
+  });
+});
+$("guide").addEventListener("change",function(){S.guide=this.checked;draw()});
+
+/* ---------- 규칙 찾기 계산 ---------- */
+function fitLine(p){
+  var n=p.length;if(n<2)return null;
+  var mx=0,my=0;p.forEach(function(q){mx+=q.x;my+=q.y});mx/=n;my/=n;
+  var sxx=0,sxy=0;p.forEach(function(q){sxx+=(q.x-mx)*(q.x-mx);sxy+=(q.x-mx)*(q.y-my)});
+  if(sxx===0)return null;
+  var b=sxy/sxx;return {a:my-b*mx,b:b};
+}
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;var t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function kmeans(p,k,seed){
+  if(p.length<k)return null;
+  var x0=Infinity,x1=-Infinity,y0=Infinity,y1=-Infinity;
+  p.forEach(function(q){x0=Math.min(x0,q.x);x1=Math.max(x1,q.x);y0=Math.min(y0,q.y);y1=Math.max(y1,q.y)});
+  var sx=(x1-x0)||1,sy=(y1-y0)||1;
+  var P=p.map(function(q){return [(q.x-x0)/sx,(q.y-y0)/sy]});
+  var R=rng(seed*7919+k*31),idx=P.map(function(_,i){return i});
+  for(var i=idx.length-1;i>0;i--){var j=Math.floor(R()*(i+1));var tmp=idx[i];idx[i]=idx[j];idx[j]=tmp}
+  var C=[];
+  idx.forEach(function(i){if(C.length>=k)return;
+    if(!C.some(function(c){return c[0]===P[i][0]&&c[1]===P[i][1]}))C.push(P[i].slice())});
+  if(C.length<k)return null;
+  var lab=P.map(function(){return -1});
+  for(var it=0;it<100;it++){
+    var changed=false;
+    P.forEach(function(pt,i){var best=0,bd=Infinity;
+      C.forEach(function(c,ci){var d=(pt[0]-c[0])*(pt[0]-c[0])+(pt[1]-c[1])*(pt[1]-c[1]);if(d<bd){bd=d;best=ci}});
+      if(lab[i]!==best){lab[i]=best;changed=true}});
+    C=C.map(function(c,ci){var sx2=0,sy2=0,m=0;P.forEach(function(pt,i){if(lab[i]===ci){sx2+=pt[0];sy2+=pt[1];m++}});
+      if(!m){changed=true;return P[Math.floor(R()*P.length)].slice()}return [sx2/m,sy2/m]});
+    if(!changed)break;
+  }
+  // 같은 나눔이면 같은 색이 되도록 무리 번호를 가운데 위치 순서로 정리
+  var order=C.map(function(c,i){return [c[0]+c[1],i]}).sort(function(a,b){return a[0]-b[0]});
+  var map=[];order.forEach(function(o,n){map[o[1]]=n});
+  lab=lab.map(function(l){return map[l]});
+  var groups=[];for(var g=0;g<k;g++)groups.push({members:[],cx:0,cy:0});
+  p.forEach(function(q,i){groups[lab[i]].members.push(q)});
+  groups.forEach(function(g){var m=g.members.length||1;g.members.forEach(function(q){g.cx+=q.x;g.cy+=q.y});g.cx/=m;g.cy/=m});
+  var byRow={};p.forEach(function(q,i){byRow[q.ri]=lab[i]});
+  return {groups:groups,byRow:byRow};
+}
+
+/* ---------- 그리기 ---------- */
+function nice(min,max,count){
+  if(min===max){min-=1;max+=1}
+  var span=max-min,step=Math.pow(10,Math.floor(Math.log10(span/count)));
+  var e=span/count/step; step*= e>=5?10:e>=2?5:e>=1.5?2:1;
+  var lo=Math.floor(min/step)*step,hi=Math.ceil(max/step)*step,t=[];
+  for(var v=lo;v<=hi+step/2;v+=step)t.push(+v.toFixed(10));
+  return {lo:lo,hi:hi,ticks:t};
+}
+function fmt(v){return Math.abs(v)>=1000?v.toLocaleString("ko-KR"):String(+v.toFixed(2))}
+function fmt1(v){return String(Math.round(v*10)/10)}
+
+function draw(){
+  var cv=$("chart"),box=cv.parentElement,W=box.clientWidth-16;
+  var H=Math.round(Math.max(320,Math.min(520,W*0.62)));
+  var dpr=window.devicePixelRatio||1;
+  cv.width=W*dpr;cv.height=H*dpr;cv.style.height=H+"px";
+  var c=cv.getContext("2d");c.setTransform(dpr,0,0,dpr,0,0);
+  c.clearRect(0,0,W,H);c.fillStyle="#fff";c.fillRect(0,0,W,H);
+  S.pts=[];S.fit=null;S.kmRes=null;
+  var font='"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif';
+  function msg(m){c.fillStyle="#5b6b7c";c.font="bold 22px "+font;c.textAlign="center";c.textBaseline="middle";c.fillText(m,W/2,H/2)}
+  function done(){renderRules()}
+  if(!S.rows.length){msg("📂 자료를 불러와 주세요");return done()}
+  if(S.x<0||S.y<0){msg("숫자로 된 열이 두 개 있어야 점그래프를 그릴 수 있어요");return done()}
+
+  var L=72,R=20,T=48,B=70,pw=W-L-R,ph=H-T-B;
+  var line=S.type==="line";
+  var series=[S.y];
+  if(line)[S.y2,S.y3].forEach(function(v){if(v>=0&&series.indexOf(v)<0)series.push(v)});
+
+  var lo=Infinity,hi=-Infinity,xlo=Infinity,xhi=-Infinity,pairs=[],skipped=0;
+  if(line){
+    series.forEach(function(sc){S.rows.forEach(function(r){var v=num(r[sc]);if(v!==null){lo=Math.min(lo,v);hi=Math.max(hi,v)}})});
+  }else{
+    S.rows.forEach(function(r,ri){var a=num(r[S.x]),b=num(r[S.y]);if(a===null||b===null){skipped++;return}
+      pairs.push({ri:ri,x:a,y:b});xlo=Math.min(xlo,a);xhi=Math.max(xhi,a);lo=Math.min(lo,b);hi=Math.max(hi,b)});
+    S.xmin=xlo;S.xmax=xhi;
+    if(S.trend)S.fit=fitLine(pairs);
+    if(S.km)S.kmRes=kmeans(pairs,S.k,S.seed);
+  }
+  if(lo===Infinity){msg("그릴 수 있는 숫자가 없어요");return done()}
+  if(lo>=0)lo=0;
+  var yr=nice(lo,hi,5);
+  var Y=function(v){return T+ph-(v-yr.lo)/(yr.hi-yr.lo)*ph};
+
+  c.font="15px "+font;c.textAlign="right";c.textBaseline="middle";
+  yr.ticks.forEach(function(t){var y=Y(t);c.strokeStyle="#edf2f7";c.lineWidth=1;c.beginPath();c.moveTo(L,y);c.lineTo(L+pw,y);c.stroke();c.fillStyle="#5b6b7c";c.fillText(fmt(t),L-8,y)});
+
+  c.fillStyle="#1f2d3d";c.font="bold 16px "+font;c.textAlign="center";c.textBaseline="alphabetic";
+  c.fillText("↔ "+S.headers[S.x],L+pw/2,H-12);
+  c.save();c.translate(18,T+ph/2);c.rotate(-Math.PI/2);c.textBaseline="middle";
+  c.fillText(line?"↕ 값":"↕ "+S.headers[S.y],0,0);c.restore();
+
+  var used=0,lx=L;
+  function ring(x,y){c.strokeStyle="#1f2d3d";c.lineWidth=3;c.beginPath();c.arc(x,y,13,0,7);c.stroke();
+    c.strokeStyle="#ffd43b";c.lineWidth=3;c.beginPath();c.arc(x,y,17,0,7);c.stroke()}
+
+  if(line){
+    var n=S.rows.length,step=n>1?pw/(n-1):0,X=function(i){return n>1?L+i*step:L+pw/2};
+    c.strokeStyle="#9fb3c8";c.lineWidth=2;c.beginPath();c.moveTo(L,T);c.lineTo(L,T+ph);c.lineTo(L+pw,T+ph);c.stroke();
+    var every=Math.max(1,Math.ceil(n/Math.max(1,Math.floor(pw/96))));
+    c.font="14px "+font;c.fillStyle="#5b6b7c";c.textAlign="center";c.textBaseline="top";
+    for(var i=0;i<n;i+=every)c.fillText(S.rows[i][S.x],X(i),T+ph+8);
+    c.textAlign="left";c.textBaseline="middle";c.font="bold 16px "+font;
+    series.forEach(function(sc,k){c.fillStyle=COLORS[k];c.fillRect(lx,16,26,6);c.fillStyle="#1f2d3d";c.fillText(S.headers[sc],lx+32,19);lx+=c.measureText(S.headers[sc]).width+64});
+    series.forEach(function(sc,k){
+      c.strokeStyle=COLORS[k];c.lineWidth=3;c.lineJoin="round";c.beginPath();var pen=false;
+      S.rows.forEach(function(r,i){var v=num(r[sc]);if(v===null){pen=false;skipped++;return}
+        if(pen)c.lineTo(X(i),Y(v));else{c.moveTo(X(i),Y(v));pen=true}});
+      c.stroke();
+      var rad=n>60?2.5:4.5;
+      S.rows.forEach(function(r,i){var v=num(r[sc]);if(v===null)return;used++;
+        c.fillStyle="#fff";c.beginPath();c.arc(X(i),Y(v),rad+1.5,0,7);c.fill();
+        c.fillStyle=COLORS[k];c.beginPath();c.arc(X(i),Y(v),rad,0,7);c.fill();
+        S.pts.push({x:X(i),y:Y(v),ri:i,cols:[S.x,sc]});
+      });
+    });
+    S.pts.forEach(function(p){if(p.ri===S.sel)ring(p.x,p.y)});
+  }else{
+    if(xlo>=0)xlo=0;
+    var xr=nice(xlo,xhi,5),X2=function(v){return L+(v-xr.lo)/(xr.hi-xr.lo)*pw};
+    c.font="15px "+font;c.textAlign="center";c.textBaseline="top";
+    xr.ticks.forEach(function(t){var x=X2(t);c.strokeStyle="#edf2f7";c.lineWidth=1;c.beginPath();c.moveTo(x,T);c.lineTo(x,T+ph);c.stroke();c.fillStyle="#5b6b7c";c.fillText(fmt(t),x,T+ph+8)});
+    c.strokeStyle="#9fb3c8";c.lineWidth=2;c.beginPath();c.moveTo(L,T);c.lineTo(L,T+ph);c.lineTo(L+pw,T+ph);c.stroke();
+
+    var km=S.kmRes,groups=[];
+    if(!km&&S.g>=0)S.rows.forEach(function(r){var k=r[S.g]||"(빈 칸)";if(groups.indexOf(k)<0)groups.push(k)});
+    c.textAlign="left";c.textBaseline="middle";c.font="bold 16px "+font;
+    var legend=km?km.groups.map(function(_,n){return ["무리 "+(n+1),KCOLORS[n]]}):groups.map(function(gn,k){return [gn,COLORS[k%COLORS.length]]});
+    legend.forEach(function(l){c.fillStyle=l[1];c.beginPath();c.arc(lx+8,19,8,0,7);c.fill();c.fillStyle="#1f2d3d";c.fillText(l[0],lx+22,19);lx+=c.measureText(l[0]).width+48});
+
+    c.save();c.beginPath();c.rect(L,T,pw,ph);c.clip();
+    if(S.guide){
+      var a=Math.max(xr.lo,yr.lo),b=Math.min(xr.hi,yr.hi);
+      if(b>a){c.save();c.setLineDash([10,8]);c.strokeStyle="#7b61ff";c.lineWidth=2.5;c.beginPath();c.moveTo(X2(a),Y(a));c.lineTo(X2(b),Y(b));c.stroke();c.restore();
+        c.fillStyle="#7b61ff";c.font="bold 15px "+font;c.textAlign="right";c.textBaseline="bottom";c.fillText("두 값이 똑같은 줄",X2(b)-6,Y(b)-6)}
+    }
+    var rad=pairs.length>200?4:7;
+    pairs.forEach(function(q){used++;
+      var col=km?KCOLORS[km.byRow[q.ri]]:(S.g>=0?COLORS[groups.indexOf(S.rows[q.ri][S.g]||"(빈 칸)")%COLORS.length]:COLORS[0]);
+      c.globalAlpha=.8;c.fillStyle=col;c.beginPath();c.arc(X2(q.x),Y(q.y),rad,0,7);c.fill();c.globalAlpha=1;
+      c.strokeStyle="#fff";c.lineWidth=1.5;c.stroke();
+      S.pts.push({x:X2(q.x),y:Y(q.y),ri:q.ri,cols:[S.x,S.y].concat(!km&&S.g>=0?[S.g]:[])});
+    });
+    // 추세선
+    if(S.fit){
+      var f=S.fit,xa=xr.lo,xb=xr.hi;
+      c.strokeStyle="#1f2d3d";c.lineWidth=3.5;c.beginPath();c.moveTo(X2(xa),Y(f.a+f.b*xa));c.lineTo(X2(xb),Y(f.a+f.b*xb));c.stroke();
+      if(S.predX!==null){
+        var py=f.a+f.b*S.predX,px0=X2(S.predX),py0=Y(py);
+        c.save();c.setLineDash([6,6]);c.strokeStyle="#e2574c";c.lineWidth=2;c.beginPath();
+        c.moveTo(px0,T+ph);c.lineTo(px0,py0);c.lineTo(L,py0);c.stroke();c.restore();
+        c.fillStyle="#e2574c";c.beginPath();
+        for(var s=0;s<10;s++){var ang=-Math.PI/2+s*Math.PI/5,rr=s%2?6:14;c.lineTo(px0+rr*Math.cos(ang),py0+rr*Math.sin(ang))}
+        c.closePath();c.fill();c.strokeStyle="#fff";c.lineWidth=1.5;c.stroke();
+      }
+    }
+    // 무리 가운데
+    if(km)km.groups.forEach(function(g,n){var x=X2(g.cx),y=Y(g.cy);
+      c.lineCap="round";c.strokeStyle="#1f2d3d";c.lineWidth=8;c.beginPath();c.moveTo(x-11,y-11);c.lineTo(x+11,y+11);c.moveTo(x+11,y-11);c.lineTo(x-11,y+11);c.stroke();
+      c.strokeStyle=KCOLORS[n];c.lineWidth=4.5;c.stroke();c.lineCap="butt"});
+    S.pts.forEach(function(p){if(p.ri===S.sel)ring(p.x,p.y)});
+    c.restore();
+    if(S.fit){c.fillStyle="#1f2d3d";c.font="bold 16px "+font;c.textAlign="right";c.textBaseline="middle";c.fillRect(W-R-130,16,26,4);c.fillText("추세선",W-R-40,19)}
+  }
+  var info="점 "+used+"개를 그렸어요"+(skipped?" · 빈 칸 "+skipped+"개는 빼고 그렸어요":"");
+  c.font="14px "+font;c.fillStyle="#5b6b7c";c.textAlign="right";c.textBaseline="alphabetic";c.fillText(info,W-R,H-12);
+  done();
+}
+
+/* ---------- 규칙 찾기 화면 ---------- */
+function updateRuleUI(){
+  $("trendBtn").classList.toggle("on",S.trend);$("kmBtn").classList.toggle("on",S.km);
+  $("trendPanel").classList.toggle("hide",!S.trend);$("kmPanel").classList.toggle("hide",!S.km);
+}
+function renderRules(){
+  updateRuleUI();
+  if(S.trend){
+    $("pxName").textContent=S.headers[S.x]||"-";$("pyName").textContent=S.headers[S.y]||"-";
+    if(!S.fit){$("trendInfo").textContent="가로축 값이 모두 같거나 점이 너무 적어서 추세선을 그릴 수 없어요.";$("predOut").textContent="?"}
+    else{
+      var b=S.fit.b;
+      $("trendInfo").textContent=Math.abs(b)<0.005?"추세선이 거의 평평해요. 가로축 값이 커져도 세로축 값은 별로 달라지지 않아요."
+        :"가로축 값이 10만큼 커지면, 세로축 값은 약 "+fmt1(Math.abs(b*10))+"만큼 "+(b>0?"커져요.":"작아져요.");
+      if(S.predX===null)$("predOut").textContent="?";
+      else{
+        var out="약 "+fmt1(S.fit.a+S.fit.b*S.predX);
+        if(S.predX<S.xmin||S.predX>S.xmax)out+=" (자료에 없는 범위라서 더 많이 다를 수 있어요)";
+        $("predOut").textContent=out;
+      }
+    }
+  }
+  if(S.km){
+    $("seedNo").textContent=S.seed;
+    document.querySelectorAll("#kSeg button").forEach(function(b){b.classList.toggle("on",+b.dataset.k===S.k)});
+    var km=S.kmRes,box=$("kmTable");
+    if(!km){box.innerHTML='<p style="padding:14px;margin:0">점이 '+S.k+'개보다 적거나 서로 다른 점이 모자라서 '+S.k+'무리로 나눌 수 없어요.</p>';return}
+    var X=esc(S.headers[S.x]),Y=esc(S.headers[S.y]);
+    var h="<table><thead><tr><th>무리</th><th>점 수</th><th>"+X+"<br>평균</th><th>"+Y+"<br>평균</th><th>들어간 날짜</th></tr></thead><tbody>";
+    km.groups.forEach(function(g,n){
+      var names=g.members.slice().sort(function(a,b){return a.ri-b.ri}).map(function(m){return esc(rowName(m.ri))}).join(", ");
+      h+='<tr><td><span class="dot" style="background:'+KCOLORS[n]+'"></span><b>무리 '+(n+1)+'</b></td><td>'+g.members.length+'개</td><td>'+fmt1(g.cx)+'</td><td>'+fmt1(g.cy)+'</td><td><div class="dates">'+(names||"-")+'</div></td></tr>';
+    });
+    box.innerHTML=h+"</tbody></table>";
+  }
+}
+function ensureReady(){
+  if(!S.rows.length){ruleSay("📂 자료를 먼저 불러와 주세요.");return false}
+  if(numCols().length<2){ruleSay("숫자로 된 열이 두 개 있어야 규칙을 찾을 수 있어요.");return false}
+  if(S.type!=="scatter"){setType("scatter");ruleSay("🔵 점그래프로 바꿔 그렸어요. 위 그래프를 보세요!",true)}
+  else ruleSay("");
+  return true;
+}
+$("trendBtn").addEventListener("click",function(){
+  if(S.trend){S.trend=false;ruleSay("");draw();return}
+  if(!ensureReady())return;S.trend=true;draw();
+});
+$("kmBtn").addEventListener("click",function(){
+  if(S.km){S.km=false;ruleSay("");draw();return}
+  if(!ensureReady())return;S.km=true;draw();
+});
+function predict(){
+  var v=num($("predX").value);
+  if(v===null){S.predX=null;$("predOut").textContent="숫자를 넣어 주세요";draw();$("predOut").textContent="숫자를 넣어 주세요";return}
+  S.predX=v;draw();
+}
+$("predBtn").addEventListener("click",predict);
+$("predX").addEventListener("keydown",function(e){if(e.key==="Enter")predict()});
+document.querySelectorAll("#kSeg button").forEach(function(b){b.addEventListener("click",function(){S.k=+b.dataset.k;draw()})});
+$("shuffleBtn").addEventListener("click",function(){S.seed++;$("askShuffle").classList.remove("hide");draw()});
+
+/* ---------- 점 누르기 → 원본 표 강조 ---------- */
+function resetPick(){$("pick").textContent="👆 그래프의 점을 손가락으로 누르면 자세한 값이 여기에 나와요.";S.sel=-1;highlight(-1)}
+$("chart").addEventListener("pointerdown",function(e){
+  if(!S.pts.length)return;
+  var rc=this.getBoundingClientRect(),x=e.clientX-rc.left,y=e.clientY-rc.top,best=null,bd=40*40;
+  S.pts.forEach(function(p){var d=(p.x-x)*(p.x-x)+(p.y-y)*(p.y-y);if(d<bd){bd=d;best=p}});
+  if(!best){resetPick();draw();return}
+  var d=dateCol(),cols=best.cols.slice();if(d>=0&&cols.indexOf(d)<0)cols.unshift(d);
+  var row=S.rows[best.ri];
+  var extra=S.kmRes&&S.kmRes.byRow[best.ri]!=null?' · <b>무리 '+(S.kmRes.byRow[best.ri]+1)+'</b>':"";
+  $("pick").innerHTML="📍 "+cols.map(function(ci){return "<b>"+esc(S.headers[ci])+"</b> "+esc(row[ci]||"-")}).join(" · ")+extra+
+    '<br><small style="color:#5b6b7c">원본 자료 표의 '+(best.ri+1)+'번째 줄에 노랗게 표시했어요.</small>';
+  S.sel=best.ri;draw();highlight(best.ri);
+});
+function highlight(ri){
+  var w=$("tableWrap"),old=w.querySelector("tr.hl");if(old)old.classList.remove("hl");
+  if(ri<0)return;var tr=$("tr-"+ri);if(!tr)return;tr.classList.add("hl");
+  var a=tr.getBoundingClientRect(),b=w.getBoundingClientRect();
+  w.scrollTop+=a.top-b.top-b.height/2+a.height/2;
+}
+function esc(s){return String(s).replace(/[&<>"]/g,function(m){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]})}
+
+/* ---------- 원본 표 ---------- */
+function buildTable(){
+  var h="<table><thead><tr><th>번호</th>"+S.headers.map(function(x){return "<th>"+esc(x)+"</th>"}).join("")+"</tr></thead><tbody>";
+  S.rows.forEach(function(r,i){h+='<tr id="tr-'+i+'"><td>'+(i+1)+"</td>"+r.map(function(v){return "<td>"+esc(v)+"</td>"}).join("")+"</tr>"});
+  $("tableWrap").innerHTML=h+"</tbody></table>";
+}
+
+/* ---------- 그림 저장 ---------- */
+$("saveBtn").addEventListener("click",function(){
+  if(!S.rows.length){say("자료를 불러와 주세요. 그래프가 있어야 저장할 수 있어요.");return}
+  var cv=$("chart"),dpr=window.devicePixelRatio||1,w=cv.width,src=$("src").value.trim()||"(자료 출처를 적지 않았어요)";
+  var out=document.createElement("canvas"),pad=24*dpr;
+  out.width=w+pad*2;out.height=cv.height+pad*2+90*dpr;
+  var c=out.getContext("2d");c.fillStyle="#fff";c.fillRect(0,0,out.width,out.height);
+  c.fillStyle="#1f2d3d";c.font="bold "+(22*dpr)+'px "Malgun Gothic",sans-serif';c.fillText("미세먼지 데이터 탐험",pad,pad+20*dpr);
+  c.drawImage(cv,pad,pad+40*dpr);
+  c.font=(16*dpr)+'px "Malgun Gothic",sans-serif';c.fillStyle="#5b6b7c";c.fillText("자료 출처: "+src,pad,out.height-pad);
+  var a=document.createElement("a");a.download="미세먼지-그래프.png";a.href=out.toDataURL("image/png");document.body.appendChild(a);a.click();a.remove();
+});
+
+/* ---------- 그래프 + 나의 해석 → 한 장의 그림 ---------- */
+var last={url:null,file:null,name:""};
+function repSay(m,ok){var el=$("repMsg");if(!m){el.className="status";return}el.textContent=m;el.className="status "+(ok?"ok":"err")}
+function wrapText(c,text,maxW){
+  var out=[];
+  String(text).split(/\n/).forEach(function(par){
+    var line="",toks=par.split(/(\s+)/);
+    toks.forEach(function(tk){
+      if(c.measureText(line+tk).width<=maxW){line+=tk;return}
+      if(line.trim()){out.push(line.trimEnd());line=""}
+      tk=tk.replace(/^\s+/,"");
+      while(c.measureText(tk).width>maxW){ // 아주 긴 낱말은 글자 단위로 자르기
+        var i=1;while(i<tk.length&&c.measureText(tk.slice(0,i+1)).width<=maxW)i++;
+        out.push(tk.slice(0,i));tk=tk.slice(i);
+      }
+      line=tk;
+    });
+    out.push(line.trimEnd());
+  });
+  return out;
+}
+function rrect(c,x,y,w,h,r,fill,stroke){
+  c.beginPath();c.moveTo(x+r,y);c.lineTo(x+w-r,y);c.quadraticCurveTo(x+w,y,x+w,y+r);c.lineTo(x+w,y+h-r);c.quadraticCurveTo(x+w,y+h,x+w-r,y+h);
+  c.lineTo(x+r,y+h);c.quadraticCurveTo(x,y+h,x,y+h-r);c.lineTo(x,y+r);c.quadraticCurveTo(x,y,x+r,y);c.closePath();
+  if(fill){c.fillStyle=fill;c.fill()}if(stroke){c.strokeStyle=stroke;c.lineWidth=2;c.stroke()}
+}
+$("reportBtn").addEventListener("click",function(){
+  if(!S.rows.length){repSay("먼저 자료를 불러와 그래프를 그려 주세요.");return}
+  var f={who:$("who").value.trim(),seen:$("seen").value.trim(),interp:$("interp").value.trim(),why:$("why").value.trim()};
+  if(!f.interp){repSay("💡 '나의 해석' 칸을 먼저 적어 주세요.");$("interp").focus();return}
+  repSay("");
+  var Wd=1200,P=48,inner=Wd-P*2,F='"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif';
+  var ch=$("chart"),chH=Math.round(ch.height*inner/ch.width);
+  var d=new Date(),today=d.getFullYear()+". "+(d.getMonth()+1)+". "+d.getDate()+".";
+  var H=S.headers,desc;
+  if(S.type==="line")desc="꺾은선그래프 · 가로축: "+H[S.x]+" · 세로축: "+H[S.y]+(S.y2>=0&&S.y2!==S.y?" · 함께 그린 선: "+H[S.y2]:"");
+  else desc="점그래프 · 가로축: "+H[S.x]+" · 세로축: "+H[S.y]+(!S.kmRes&&S.g>=0?" · 색으로 나눈 것: "+H[S.g]:"");
+  var rules=[];
+  if(S.type==="scatter"&&S.trend&&S.fit){
+    rules.push("📈 추세선: "+$("trendInfo").textContent);
+    if(S.predX!==null)rules.push("🔮 예측: 가로축 값이 "+S.predX+"일 때 세로축 값은 약 "+fmt1(S.fit.a+S.fit.b*S.predX)+" (예측은 실제와 다를 수 있어요)");
+  }
+  if(S.type==="scatter"&&S.km&&S.kmRes)rules.push("🧩 끼리끼리 묶기: "+S.k+"무리 · 시작 위치 "+S.seed+"번 · "+S.kmRes.groups.map(function(g,n){return "무리 "+(n+1)+" "+g.members.length+"개"}).join(", "));
+  var src=$("src").value.trim();
+
+  function paint(c,draw){
+    var y=0;
+    if(draw){
+      c.fillStyle="#2f80ed";c.fillRect(0,0,Wd,112);
+      c.fillStyle="#fff";c.textBaseline="middle";c.textAlign="left";c.font="bold 40px "+F;c.fillText("🌫️ 나의 미세먼지 데이터 해석",P,56);
+      c.textAlign="right";c.font="bold 26px "+F;c.fillText((f.who?f.who+"   ":"")+today,Wd-P,56);c.textAlign="left";
+    }
+    y=140;
+    c.font="bold 24px "+F;c.textBaseline="top";
+    wrapText(c,"📊 "+desc,inner).forEach(function(l){if(draw){c.fillStyle="#5b6b7c";c.fillText(l,P,y)}y+=34});
+    y+=8;
+    if(draw){rrect(c,P,y,inner,chH+16,16,"#fff","#d9e3ec");c.drawImage(ch,P+8,y+8,inner-16,chH)}
+    y+=chH+16+18;
+    if(rules.length){
+      c.font="22px "+F;var rl=[];rules.forEach(function(r){rl=rl.concat(wrapText(c,r,inner-40))});
+      var rh=20+rl.length*34+14;
+      if(draw){rrect(c,P,y,inner,rh,16,"#f4f8fb");c.fillStyle="#1f2d3d";c.font="22px "+F;c.textBaseline="top";rl.forEach(function(l,i){c.fillText(l,P+20,y+20+i*34)})}
+      y+=rh+18;
+    }
+    [["👀 그래프에서 본 것",f.seen,"#fff8e6","#b7791f"],
+     ["💡 나의 해석",f.interp,"#e7f0fd","#2f80ed"],
+     ["🔎 그렇게 생각한 까닭",f.why,"#f6f3ff","#7b61ff"]].forEach(function(b){
+      if(!b[1])return;
+      c.font="26px "+F;var ls=wrapText(c,b[1],inner-48);var h=24+48+ls.length*40+20;
+      if(draw){rrect(c,P,y,inner,h,20,b[2]);c.textBaseline="top";c.fillStyle=b[3];c.font="bold 28px "+F;c.fillText(b[0],P+24,y+24);
+        c.fillStyle="#1f2d3d";c.font="26px "+F;ls.forEach(function(l,i){c.fillText(l,P+24,y+24+48+i*40)})}
+      y+=h+18;
+    });
+    c.font="20px "+F;
+    wrapText(c,"📌 자료 출처: "+(src||"(적지 않았어요)"),inner).forEach(function(l){if(draw){c.fillStyle="#5b6b7c";c.textBaseline="top";c.fillText(l,P,y)}y+=30});
+    return y+P;
+  }
+  var m=document.createElement("canvas");m.width=Wd;m.height=10;
+  var total=Math.ceil(paint(m.getContext("2d"),false));
+  var out=document.createElement("canvas");out.width=Wd;out.height=total;
+  var c=out.getContext("2d");c.fillStyle="#fff";c.fillRect(0,0,Wd,total);paint(c,true);
+  out.toBlob(function(blob){
+    if(!blob){repSay("그림을 만들지 못했어요. 다시 눌러 주세요.");return}
+    if(last.url)URL.revokeObjectURL(last.url);
+    last.url=URL.createObjectURL(blob);
+    last.name="미세먼지해석"+(f.who?"-"+f.who.replace(/[\\\/:*?"<>|\s]+/g,"_"):"")+".png";
+    try{last.file=new File([blob],last.name,{type:"image/png"})}catch(e){last.file=null}
+    var canShare=false;
+    try{canShare=!!(last.file&&navigator.canShare&&navigator.canShare({files:[last.file]}))}catch(e){}
+    $("shareBtn").classList.toggle("hide",!canShare);
+    $("outImg").src=last.url;$("outBox").classList.remove("hide");
+    $("outBox").scrollIntoView({behavior:"smooth",block:"start"});
+  },"image/png");
+});
+$("dlBtn").addEventListener("click",function(){
+  if(!last.url)return;
+  var a=document.createElement("a");a.href=last.url;a.download=last.name;document.body.appendChild(a);a.click();a.remove();
+});
+$("shareBtn").addEventListener("click",function(){
+  if(!last.file)return;
+  navigator.share({files:[last.file],title:"나의 미세먼지 데이터 해석"}).catch(function(){});
+});
+
+/* ---------- 자료 링크: 주소 보이기 + 주소 복사 ---------- */
+function copyText(t,btn){
+  function ok(){var o=btn.textContent;btn.textContent="✅ 복사했어요!";setTimeout(function(){btn.textContent=o},1600)}
+  function fallback(){var ta=document.createElement("textarea");ta.value=t;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();
+    try{document.execCommand("copy");ok()}catch(e){window.prompt("아래 주소를 길게 눌러 복사하세요",t)}ta.remove()}
+  if(navigator.clipboard&&window.isSecureContext)navigator.clipboard.writeText(t).then(ok,fallback);else fallback();
+}
+document.querySelectorAll("a.lk").forEach(function(a){
+  var box=document.createElement("div");box.className="lkbox";
+  a.parentNode.insertBefore(box,a);box.appendChild(a);
+  var bar=document.createElement("div");bar.className="lkurl";
+  var u=document.createElement("code");u.textContent=a.href.replace(/^https:\/\//,"");
+  var b=document.createElement("button");b.type="button";b.textContent="📋 주소 복사";
+  b.addEventListener("click",function(){copyText(a.href,b)});
+  bar.appendChild(u);bar.appendChild(b);box.appendChild(bar);
+});
+
+/* ---------- 불러오기 연결 ---------- */
+var drop=$("drop");
+$("pickBtn").addEventListener("click",function(){$("file").click()});
+$("file").addEventListener("change",function(){readFile(this.files[0]);this.value=""});
+["dragenter","dragover"].forEach(function(t){drop.addEventListener(t,function(e){e.preventDefault();drop.classList.add("over")})});
+["dragleave","drop"].forEach(function(t){drop.addEventListener(t,function(e){e.preventDefault();drop.classList.remove("over")})});
+drop.addEventListener("drop",function(e){readFile(e.dataTransfer.files[0])});
+window.addEventListener("dragover",function(e){e.preventDefault()});
+window.addEventListener("drop",function(e){e.preventDefault()});
+
+var rt;window.addEventListener("resize",function(){clearTimeout(rt);rt=setTimeout(draw,150)});
+fillSelects();draw();
+// 처음 열면 예시 자료가 바로 들어와요. 주소 끝에 ?sample=0 을 붙이면 빈 상태로 시작해요.
+if(!/[?&]sample=0\b/.test(location.search))loadSample();
+else{$("nowName").textContent="아직 없어요";$("introText").innerHTML="아래 <b>🚀 내가 찾은 자료로 탐험하기</b>에서 CSV 파일을 불러와 주세요.";$("ownCard").querySelector("details").open=true;$("backSample").textContent="🌱 예시 자료로 시작하기";$("backSample").classList.remove("hide")}
+})();
+</script>
+</body>
+</html>
