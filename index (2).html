@@ -103,6 +103,47 @@ header p{margin:6px 0 0;color:var(--sub);font-size:1.05rem}
 .hint summary{cursor:pointer;font-weight:800;min-height:40px;display:flex;align-items:center}
 .hint ul{margin:6px 0 0;padding-left:1.2em;font-size:.95rem}
 
+/* 예상 고르기 */
+.pq{margin:0 0 6px;font-size:1.08rem}
+.bad{color:#c2410c}
+.choose{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:8px 0}
+.choose .who{font-weight:800;min-width:8.5em}
+.choose button{appearance:none;border:3px solid var(--line);background:#fff;border-radius:14px;min-height:52px;padding:8px 14px;font:inherit;font-size:1rem;font-weight:700;cursor:pointer;color:var(--ink);touch-action:manipulation}
+.choose button.on{border-color:var(--step);background:#ede9fe;color:#5b21b6}
+.choose button:disabled{cursor:default;opacity:.55}
+.choose button.on:disabled{opacity:1}
+/* 날짜 카드 */
+.howto{margin:0 0 10px;font-size:1.02rem}
+.addrow{display:flex;gap:8px;align-items:center}
+.addday{flex:1;background:var(--step)}
+.addday:disabled{background:#cbd5e1;cursor:default}
+.dcard{background:#fff;border-radius:16px;padding:14px;margin-top:12px;border:3px solid #ede9fe}
+.dcard .dh{display:flex;flex-wrap:wrap;align-items:center;gap:8px;cursor:pointer}
+.dcard .dt{font-weight:800;font-size:1.08rem;color:#5b21b6}
+.dcard .dd{font-weight:800;font-size:1.08rem}
+.dcard .dx{margin-left:auto;display:flex;gap:6px}
+.dcard .dx button{appearance:none;border:0;border-radius:12px;min-height:44px;padding:6px 12px;font:inherit;font-size:.9rem;font-weight:700;cursor:pointer;background:#f1f5f9;color:var(--ink)}
+.dtab{width:100%;border-collapse:collapse;margin:10px 0 4px;font-size:1rem}
+.dtab td{padding:6px 4px;border-bottom:1px solid #f1f5f9}
+.dtab td.v{text-align:right;white-space:nowrap;font-weight:800}
+.dtab small{color:var(--sub);font-weight:600}
+.dq{margin-top:8px}
+.dq label{display:block;font-weight:700;font-size:.98rem;margin-top:8px}
+.dq input{width:100%;font:inherit;font-size:1.02rem;border:2px solid var(--line);border-radius:12px;padding:8px 10px;min-height:48px;margin-top:4px}
+.empty{color:var(--sub);margin:10px 0 0}
+/* 역할 색 · 두 선 견주기 */
+.sw{display:inline-block;width:14px;height:14px;border-radius:4px;margin-right:6px;vertical-align:-2px}
+.hl{padding:0 5px;border-radius:5px}.hl.y{background:#fde68a}.hl.p{background:#fbcfe8}
+.cmpbtns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cmpb{appearance:none;border:3px solid var(--line);background:#fff;border-radius:16px;min-height:64px;padding:10px 12px;font:inherit;font-size:1rem;font-weight:800;cursor:pointer;color:var(--ink);text-align:left;touch-action:manipulation}
+.cmpb small{display:block;font-weight:600;color:var(--sub);font-size:.85rem}
+.cmpb.near.on{border-color:#ca8a04;background:#fef9c3}
+.cmpb.cross.on{border-color:#db2777;background:#fce7f3}
+.cmpb:disabled{opacity:.5;cursor:default}
+.crow{background:#fff;border-radius:14px;padding:12px 14px;margin-top:10px;border-left:8px solid var(--line)}
+.crow .rh{font-weight:800}
+.crow .stars{color:#a16207;font-weight:800;margin-left:6px}
+@media (max-width:640px){.cmpbtns{grid-template-columns:1fr}}
 /* 4단계 */
 .datebar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .iconbtn{min-width:56px;padding:0 14px;font-size:1.2rem}
@@ -146,13 +187,23 @@ header p{margin:6px 0 0;color:var(--sub);font-size:1.05rem}
   <section class="card" id="s1">
     <span class="step">1단계</span>
     <h2>🤔 예상하기</h2>
-    <p class="lead">자료를 보기 전에, 내 생각을 먼저 적어 보세요.</p>
+    <p class="lead">자료를 보기 전에 내 생각을 골라 보세요.</p>
     <div class="frame mine" style="margin-top:0">
-      <div class="sent"><span>어느 동네의 미세먼지가 높은 날,</span></div>
-      <div class="sent"><span>맞닿은 옆 동네는</span><input class="long" id="pA" placeholder="내 예상"><span>것 같고,</span></div>
-      <div class="sent"><span>다른 시·도에 있는 동네는</span><input class="long" id="pB" placeholder="내 예상"><span>것 같아요.</span></div>
+      <p class="pq">① 기준 동네의 미세먼지 선과 견주면,</p>
+      <div class="choose" data-p="near">
+        <span class="who"><i class="sw" style="background:#fde68a"></i>맞닿은 옆 동네의 선은</span>
+        <button type="button" data-v="비슷">변화가 비슷할 것 같아요</button>
+        <button type="button" data-v="다름">변화가 다를 것 같아요</button>
+      </div>
+      <div class="choose" data-p="cross">
+        <span class="who"><i class="sw" style="background:#fbcfe8"></i>경계선 건너 옆 동네의 선은</span>
+        <button type="button" data-v="비슷">변화가 비슷할 것 같아요</button>
+        <button type="button" data-v="다름">변화가 다를 것 같아요</button>
+      </div>
+      <div class="sent"><span>왜 그렇게 생각했나요?</span><input class="long" id="pR"></div>
     </div>
-    <p class="note" id="predNote">2단계에서 동네를 고르기 시작하면 예상이 잠겨요. 3단계에서 다시 볼 수 있어요.</p>
+    <p class="note">경계선 건너 옆 동네는 굵은 시·도 경계선 바로 건너편에 맞닿은 동네예요.</p>
+    <p class="note" id="predNote">2단계에서 동네를 고르기 시작하면 예상이 잠겨요.</p>
   </section>
 
   <!-- 2단계 -->
@@ -160,9 +211,9 @@ header p{margin:6px 0 0;color:var(--sub);font-size:1.05rem}
     <span class="step">2단계</span>
     <h2>📍 동네 고르기</h2>
     <div class="missions">
-      <div class="mission" id="ms1"><span class="mk">①</span><div><b>기준 동네 고르기</b><br>지도에서 아무 동네나 하나 골라요. 우리 동네를 알면 우리 동네도 좋아요.</div><span class="ok" id="ok1"></span></div>
-      <div class="mission" id="ms2"><span class="mk">②</span><div><b>맞닿은 옆 동네 고르기</b><br>①과 경계선을 맞대고 있는 동네를 하나 골라요. 지도에 <b style="background:#fde68a;padding:0 4px;border-radius:4px">노란색</b>으로 보여요.</div><span class="ok" id="ok2"></span></div>
-      <div class="mission" id="ms3"><span class="mk">③</span><div><b>다른 시·도 동네 고르기</b><br>①과 다른 시·도에 있는 동네를 하나 골라요. ← 전국 지도로 나가서 다른 시·도를 눌러 보세요.</div><span class="ok" id="ok3"></span></div>
+      <div class="mission" id="ms1"><span class="mk">①</span><div><b>기준 동네 고르기</b><br>지도에서 동네를 하나 골라요. 굵은 시·도 경계선 가까운 동네가 좋아요.</div><span class="ok" id="ok1"></span></div>
+      <div class="mission" id="ms2"><span class="mk" style="color:#ca8a04">②</span><div><b>맞닿은 옆 동네 고르기</b><br><b class="hl y">노란색</b> 동네 중 하나를 골라요.</div><span class="ok" id="ok2"></span></div>
+      <div class="mission" id="ms3"><span class="mk" style="color:#db2777">③</span><div><b>경계선 건너 옆 동네 고르기</b><br><b class="hl p">분홍색</b> 동네 중 하나를 골라요. 굵은 시·도 경계선 너머에 있어요.</div><span class="ok" id="ok3"></span></div>
     </div>
 
     <div class="mapbox">
@@ -175,9 +226,9 @@ header p{margin:6px 0 0;color:var(--sub);font-size:1.05rem}
     <p class="feedback" id="feedback"></p>
     <ul class="help" id="mapHelp"></ul>
     <div class="legend">
-      <span><i style="background:#e2e8f0"></i>시·군·구</span>
-      <span><i style="background:#fde68a"></i>①과 맞닿은 동네</span>
-      <span><i style="background:#fff;border:3px solid #1e293b"></i>내가 고른 동네 (번호)</span>
+      <span><i style="background:#fde68a"></i>맞닿은 옆 동네 (같은 시·도)</span>
+      <span><i style="background:#fbcfe8"></i>경계선 건너 옆 동네 (다른 시·도)</span>
+      <span><i style="background:#f1f5f9"></i>고를 수 없는 동네</span>
     </div>
 
     <div class="chips" id="chips"></div>
@@ -204,14 +255,18 @@ header p{margin:6px 0 0;color:var(--sub);font-size:1.05rem}
     </div>
     <div class="frame seen">
       <h3>👀 내가 본 것</h3>
-      <div id="rows"></div>
+      <p class="howto">두 선씩 견주어 봐요. 버튼을 누르면 그래프에 그 두 선만 남아요.</p>
+      <div class="cmpbtns" id="cmpBtns"></div>
+      <p class="howto" style="margin-top:12px"><b>두 선이 함께 높은 값이 된 날</b>을 찾아 그래프를 눌러요. ★가 생겨요. 다시 누르면 ★가 지워져요.</p>
+      <div class="chartbox"><canvas id="cmpChart" aria-label="두 동네를 견주는 꺾은선그래프"></canvas></div>
+      <div id="cmpRows"></div>
       <details class="hint">
         <summary>🤔 어떻게 써야 할지 모를 때 열어 보세요</summary>
         <ul>
-          <li>두 선이 겹치는 곳과 떨어지는 곳을 찾아보세요.</li>
-          <li>고른 날의 두 숫자가 몇만큼 차이 나는지 견주어 보세요.</li>
-          <li>이런 말을 써도 좋아요: 함께 높아졌어요 · 거의 똑같이 오르내렸어요 · 조금 차이가 났어요 · 따로 오르내렸어요</li>
-          <li>확실하지 않으면 '~인 것 같아요', '~일 수도 있어요'라고 써도 돼요.</li>
+          <li>두 선이 함께 늘어나고 함께 줄어드는지 선의 모양을 견주어 보세요.</li>
+          <li>값이 달라도 변화는 비슷할 수 있어요.</li>
+          <li>이런 말을 써도 좋아요: 함께 늘어나요 · 함께 줄어들어요 · 변화가 비슷해요 · 변화가 달라요</li>
+          <li>확실하지 않으면 '~인 것 같아요'라고 써도 돼요.</li>
         </ul>
       </details>
     </div>
@@ -236,9 +291,11 @@ header p{margin:6px 0 0;color:var(--sub);font-size:1.05rem}
       <li><b>◀ ▶</b> 버튼은 하루씩 앞뒤로 옮겨요.</li>
       <li><b>날짜 막대</b>를 밀면 원하는 날로 바로 가요.</li>
       <li><b>▶ 재생</b>을 누르면 하루씩 저절로 넘어가요. 한 번 더 누르면 멈춰요.</li>
-      <li>번호는 2단계에서 내가 고른 동네예요.</li>
+      <li>굵은 테두리는 2단계에서 내가 고른 동네예요. (① 남색 · ② 노란색 · ③ 분홍색)</li>
+      <li><b>🔍 고른 동네 가까이 보기</b>를 누르면 고른 동네 둘레가 크게 보여요. 테두리 안과 밖의 색이 함께 바뀌는지 살펴보세요.</li>
     </ul>
     <div class="mapbox">
+      <div class="mapbar"><span></span><button class="btn small" id="cmZoom" type="button">🔍 고른 동네 가까이 보기</button></div>
       <svg class="map" id="colorMap" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="날짜별 시·군·구 미세먼지 지도"></svg>
     </div>
     <div class="legend" id="legend"></div>
@@ -274,11 +331,16 @@ var SOURCE="에어코리아(기후에너지환경부·한국환경공단) 최종
 $("srcText").textContent=SOURCE;
 var GCOL=["#cbd5e1","#3b82f6","#22c55e","#f59e0b","#ef4444"];
 var GNAME=["그날 측정값 없음","좋음 (0~30)","보통 (31~80)","나쁨 (81~150)","매우 나쁨 (151~)"];
-var SELC=["#1e293b","#7c3aed","#db2777","#a16207"];
-var NUM=["①","②","③","④"];
-var LAND="#e2e8f0",ADJ="#fde68a",PICKED="#ffffff";
+var ROLEC=["#1e293b","#ca8a04","#db2777"];          // ① 남색 · ② 진한 노란색 · ③ 분홍
+var ROLE_N=["기준 동네","맞닿은 옆 동네","경계선 건너 옆 동네"];
+var NUM=["①","②","③"];
+var LAND="#e2e8f0",ADJ="#fde68a",CROSS="#fbcfe8",DIM="#f1f5f9",PICKED="#ffffff";
 var FONT='"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif';
-var day=0,sel=[],timer=null;
+var day=0,slot=[null,null,null],sel=[],timer=null;
+function roleOf(i){return slot.indexOf(i)}
+function rc(i){return ROLEC[roleOf(i)]}
+function rn(i){return NUM[roleOf(i)]}
+var NV=null; // 전국 보기 (여백 포함)
 
 function grade(v){if(v==null)return 0;if(v<=30)return 1;if(v<=80)return 2;if(v<=150)return 3;return 4}
 function md(i){var s=D.days[i];return [+s.slice(4,6),+s.slice(6)]}
@@ -300,7 +362,8 @@ function otherSido(a,b){return R[a].s!==R[b].s}
 
 /* ---------- 지도 만들기 (고르기 지도 · 색 지도 · 작은 지도 함께 씀) ---------- */
 function MapView(svg,o){
-  var me={vb:[0,0,D.W,D.H],view:null};
+  if(!NV)NV=[-14,-14,D.W+28,D.H+28];
+  var me={vb:NV.slice(),view:null};
   svg.setAttribute("viewBox",me.vb.join(" "));svg.setAttribute("font-family",FONT);
   svg.appendChild(el("rect",{x:-2000,y:-2000,width:5000,height:5000,fill:"#eef4f9"}));
   var gR=el("g",{}),gS=el("g",{}),gLine=el("g",{id:"gLine"}),gSel=el("g",{id:"gSel"}),gLab=el("g",{id:"gLab"}),gPin=el("g",{id:"gPin"});
@@ -319,8 +382,8 @@ function MapView(svg,o){
     me.paths.forEach(function(p,i){
       var f;
       if(o.colored)f=GCOL[grade(R[i].v[day])];
-      else if(sel.indexOf(i)>=0)f=PICKED;
-      else if(sel.length&&isAdj(sel[0],i))f=ADJ;
+      else if(roleOf(i)>=0)f=PICKED;
+      else if(slot[0]!=null)f=isAdj(slot[0],i)?(otherSido(slot[0],i)?CROSS:ADJ):DIM;
       else f=LAND;
       p.setAttribute("fill",f);
     });
@@ -346,32 +409,33 @@ function MapView(svg,o){
         G.lab.appendChild(t);
       });
     }
-    // 고른 동네 테두리, 이어진 선, 번호
+    // 고른 동네 테두리, 이어진 선, 번호 (색은 역할에 따라)
     var pos=[],rad=(o.mini?7:11)*k;
-    sel.forEach(function(i,n){
+    sel.forEach(function(i){
       var r=R[i],x=r.p[0],y=r.p[1]-(zoomed?16*k:0);
       for(var g=0;g<6&&pos.some(function(q){return Math.hypot(q[0]-x,q[1]-y)<rad*2.1});g++)x+=rad*2.2;
-      pos.push([x,y]);
+      pos.push([x,y,i]);
       if(!o.mini){
-        G.sel.appendChild(el("path",{d:r.d,fill:"none",stroke:"#ffffff","stroke-width":"7","vector-effect":"non-scaling-stroke","stroke-linejoin":"round","pointer-events":"none"}));
-        G.sel.appendChild(el("path",{d:r.d,fill:"none",stroke:SELC[n],"stroke-width":"4","vector-effect":"non-scaling-stroke","stroke-linejoin":"round","pointer-events":"none"}));
+        G.sel.appendChild(el("path",{d:r.d,fill:"none",stroke:"#ffffff","stroke-width":o.colored?"9":"7","vector-effect":"non-scaling-stroke","stroke-linejoin":"round","pointer-events":"none"}));
+        G.sel.appendChild(el("path",{d:r.d,fill:"none",stroke:rc(i),"stroke-width":o.colored?"5":"4","vector-effect":"non-scaling-stroke","stroke-linejoin":"round","pointer-events":"none"}));
       }
     });
     if(o.lines){
       pos.forEach(function(q,n){
         if(!n)return;
-        G.line.appendChild(el("line",{x1:pos[0][0],y1:pos[0][1],x2:q[0],y2:q[1],stroke:SELC[n],"stroke-width":"2.5","stroke-dasharray":"6 5","vector-effect":"non-scaling-stroke","pointer-events":"none"}));
+        G.line.appendChild(el("line",{x1:pos[0][0],y1:pos[0][1],x2:q[0],y2:q[1],stroke:rc(q[2]),"stroke-width":"2.5","stroke-dasharray":"6 5","vector-effect":"non-scaling-stroke","pointer-events":"none"}));
         if(!o.mini&&Math.hypot(q[0]-pos[0][0],q[1]-pos[0][1])/k>80){
-          var t=el("text",{x:(pos[0][0]+q[0])/2,y:(pos[0][1]+q[1])/2,"text-anchor":"middle","dominant-baseline":"middle","font-size":(13*k).toFixed(2),"font-weight":"800",fill:SELC[n],stroke:"#ffffff","stroke-width":(4*k).toFixed(2),"paint-order":"stroke","pointer-events":"none"});
-          t.textContent=kmText(km(sel[0],sel[n]));G.line.appendChild(t);
+          var t=el("text",{x:(pos[0][0]+q[0])/2,y:(pos[0][1]+q[1])/2,"text-anchor":"middle","dominant-baseline":"middle","font-size":(13*k).toFixed(2),"font-weight":"800",fill:rc(q[2]),stroke:"#ffffff","stroke-width":(4*k).toFixed(2),"paint-order":"stroke","pointer-events":"none"});
+          t.textContent=kmText(km(pos[0][2],q[2]));G.line.appendChild(t);
         }
       });
     }
-    pos.forEach(function(q,n){
+    if(o.colored)return; // 색 지도에서는 번호로 색을 가리지 않아요
+    pos.forEach(function(q){
       var pg=el("g",{"pointer-events":"none"});
-      pg.appendChild(el("circle",{cx:q[0],cy:q[1],r:rad.toFixed(2),fill:SELC[n],stroke:"#fff","stroke-width":((o.mini?1.5:2.5)*k).toFixed(2)}));
+      pg.appendChild(el("circle",{cx:q[0],cy:q[1],r:rad.toFixed(2),fill:rc(q[2]),stroke:"#fff","stroke-width":((o.mini?1.5:2.5)*k).toFixed(2)}));
       var t=el("text",{x:q[0],y:q[1],"text-anchor":"middle","dominant-baseline":"central","font-size":((o.mini?9:13)*k).toFixed(2),"font-weight":"800",fill:"#fff"});
-      t.textContent=String(n+1);pg.appendChild(t);G.pin.appendChild(pg);
+      t.textContent=String(roleOf(q[2])+1);pg.appendChild(t);G.pin.appendChild(pg);
     });
   };
   me.draw=function(){me.fill();me.overlay(me.k(),me.vb)};
@@ -388,7 +452,7 @@ function MapView(svg,o){
   return me;
 }
 function fit(b){
-  var A=D.W/D.H,pad=Math.max(b[2]-b[0],b[3]-b[1])*0.12;
+  var A=NV[2]/NV[3],pad=Math.max(b[2]-b[0],b[3]-b[1])*0.12;
   var x=b[0]-pad,y=b[1]-pad,w=b[2]-b[0]+pad*2,h=b[3]-b[1]+pad*2;
   if(w/h>A){var nh=w/A;y-=(nh-h)/2;h=nh}else{var nw=h*A;x-=(nw-w)/2;w=nw}
   return [x,y,w,h];
@@ -396,6 +460,19 @@ function fit(b){
 
 var PM=MapView($("pickMap"),{labels:true,lines:true});
 var CM=MapView($("colorMap"),{colored:true});
+function selBox(){
+  var b=[1e9,1e9,-1e9,-1e9];sel.forEach(function(i){var x=R[i].b;b=[Math.min(b[0],x[0]),Math.min(b[1],x[1]),Math.max(b[2],x[2]),Math.max(b[3],x[3])]});
+  var cx=(b[0]+b[2])/2,cy=(b[1]+b[3])/2,h=Math.max(b[2]-b[0],b[3]-b[1],60)*0.9; // 둘레까지 보이게
+  return [cx-h,cy-h,cx+h,cy+h];
+}
+var cmNear=false;
+function cmView(){
+  $("cmZoom").disabled=!sel.length;
+  if(!sel.length)cmNear=false;
+  $("cmZoom").textContent=cmNear?"← 전국 지도":"🔍 고른 동네 가까이 보기";
+  CM.go(cmNear?fit(selBox()):NV.slice());
+}
+$("cmZoom").addEventListener("click",function(){cmNear=!cmNear;cmView()});
 var MM=MapView($("miniMap"),{mini:true,lines:true});
 
 /* ---------- 2단계: 고르기 지도 ---------- */
@@ -404,10 +481,10 @@ function setView(s){
   $("viewName").textContent=s?D.sido[s].n:"전국";
   $("backNation").classList.toggle("hide",!s);
   $("mapHelp").innerHTML=s
-    ?"<li><b>동네</b>를 누르면 그 동네를 골라요. 다시 누르면 빠져요.</li><li>경계선 건너편의 다른 시·도 동네도 고를 수 있어요.</li><li><b>← 전국 지도</b>를 누르면 우리나라 전체로 돌아가요.</li>"
+    ?"<li>먼저 <b>①</b>로 쓸 동네를 눌러요.</li><li>①을 고르면 고를 수 있는 동네만 <b>노란색·분홍색</b>으로 보여요.</li><li>고른 동네를 다시 누르면 빠져요. ①을 빼면 처음부터 다시 골라요.</li><li><b>← 전국 지도</b>를 누르면 우리나라 전체로 돌아가요.</li>"
     :"<li><b>시·도</b>를 누르면 그곳이 크게 보여요.</li><li>크게 본 지도에서 <b>동네</b>를 누르면 그 동네를 골라요.</li>";
   PM.overlay(PM.k(),PM.vb);
-  PM.go(s?fit(D.sido[s].b):[0,0,D.W,D.H]);
+  PM.go(s?fit(D.sido[s].b):NV.slice());
 }
 $("backNation").addEventListener("click",function(){setView(null)});
 $("pickMap").addEventListener("click",function(e){
@@ -420,81 +497,93 @@ $("pickMap").addEventListener("click",function(e){
 var fb;
 function say(m){var f=$("feedback");f.textContent=m;f.classList.add("on");clearTimeout(fb);fb=setTimeout(function(){f.classList.remove("on")},4000)}
 function toggle(i){
-  var j=sel.indexOf(i);
-  if(j>=0){sel.splice(j,1);say("↩️ "+nm(i)+josa(nm(i),"를","을")+" 뺐어요.")}
-  else if(sel.length>=4){say("동네는 4곳까지 고를 수 있어요. 아래에서 ×를 눌러 하나를 빼 주세요.");return}
-  else{
-    lockPred();sel.push(i);
-    var n=sel.length,m="✅ "+NUM[n-1]+" "+nm(i)+josa(nm(i),"를","을")+" 골랐어요.";
-    if(n===1)m+=R[i].nb.length?" 노란색 동네가 ①과 맞닿은 동네예요.":" 이 동네는 섬이라 맞닿은 동네가 없어요. 맞닿은 동네를 찾으려면 다른 곳을 ①로 골라 보세요.";
-    else if(isAdj(sel[0],i)&&otherSido(sel[0],i))m+=" ①과 맞닿아 있고, 시·도도 달라요.";
-    else if(isAdj(sel[0],i))m+=" ①과 맞닿은 옆 동네예요.";
-    else if(otherSido(sel[0],i))m+=" ①과 다른 시·도예요.";
-    say(m);
+  var r=roleOf(i),obj=function(w){return w+josa(w,"를","을")};
+  if(r>=0){
+    if(r===0){slot=[null,null,null];say("↩️ ①을 빼서 처음부터 다시 골라요.")}
+    else{slot[r]=null;say("↩️ "+obj(nm(i))+" 뺐어요.")}
+    refreshSel();return;
   }
+  if(slot[0]==null){
+    lockPred();slot[0]=i;
+    var a=R[i].nb.filter(function(j){return !otherSido(i,j)}).length,b=R[i].nb.length-a,m="✅ ① "+obj(nm(i))+" 골랐어요.";
+    if(!R[i].nb.length)m+=" 이 동네는 섬이라 맞닿은 동네가 없어요. ①을 다시 눌러 빼고 다른 동네를 골라 보세요.";
+    else if(!b)m+=" 분홍색(경계선 건너 옆 동네)이 없어요. 굵은 경계선 가까운 동네를 ①로 다시 골라 보세요.";
+    else if(!a)m+=" 노란색(같은 시·도) 동네가 없어요. 다른 동네를 ①로 골라 보세요.";
+    else m+=" 노란색·분홍색 동네 중에서 골라요.";
+    say(m);refreshSel();return;
+  }
+  if(!isAdj(slot[0],i)){say("①과 맞닿은 노란색·분홍색 동네만 고를 수 있어요.");return}
+  var role=otherSido(slot[0],i)?2:1,was=slot[role];slot[role]=i;
+  say("✅ "+NUM[role]+" "+obj(nm(i))+" 골랐어요. ("+ROLE_N[role]+")"+(was!=null?" 전에 고른 "+nm(was)+josa(nm(was),"는","은")+" 빠졌어요.":""));
   refreshSel();
 }
 function refreshSel(){
-  PM.draw();CM.draw();MM.draw();drawChart();updatePick();
-  $("chips").innerHTML=sel.map(function(i,n){
-    var extra="";
-    if(n>0){var t=[];if(isAdj(sel[0],i))t.push("맞닿음");if(otherSido(sel[0],i))t.push("다른 시·도");extra=' <small>①에서 '+kmText(km(sel[0],i))+(t.length?" · "+t.join(" · "):"")+'</small>'}
-    return '<span class="chip"><i style="background:'+SELC[n]+'"></i>'+NUM[n]+" "+esc(nm(i))+extra+'<button type="button" data-x="'+i+'" aria-label="'+esc(nm(i))+' 빼기">×</button></span>';
+  sel=slot.filter(function(x){return x!=null});
+  PM.draw();CM.draw();MM.draw();drawChart();updatePick();if(cmNear||!sel.length)cmView();else $("cmZoom").disabled=false;
+  $("chips").innerHTML=sel.map(function(i){
+    var k=roleOf(i),extra=k>0?' <small>'+ROLE_N[k]+' · ①에서 '+kmText(km(slot[0],i))+'</small>':' <small>기준 동네</small>';
+    return '<span class="chip"><i style="background:'+rc(i)+'"></i>'+rn(i)+" "+esc(nm(i))+extra+'<button type="button" data-x="'+i+'" aria-label="'+esc(nm(i))+' 빼기">×</button></span>';
   }).join("");
-  var P=pairs();
-  $("ms1").classList.toggle("done",sel.length>=1);$("ok1").textContent=sel.length>=1?"✔ 했어요":"";
-  $("ms2").classList.toggle("done",!!P.near);$("ok2").textContent=P.near?"✔ 했어요":"";
-  $("ms3").classList.toggle("done",!!P.far);$("ok3").textContent=P.far?"✔ 했어요":"";
-  renderRows();
+  $("ms1").classList.toggle("done",slot[0]!=null);$("ok1").textContent=slot[0]!=null?"✔ 했어요":"";
+  $("ms2").classList.toggle("done",slot[1]!=null);$("ok2").textContent=slot[1]!=null?"✔ 했어요":"";
+  $("ms3").classList.toggle("done",slot[2]!=null);$("ok3").textContent=slot[2]!=null?"✔ 했어요":"";
+  renderCmp();
 }
 $("chips").addEventListener("click",function(e){var b=e.target.closest("button[data-x]");if(b)toggle(+b.getAttribute("data-x"))});
 function updatePick(){
   if(!sel.length){$("pick").textContent="👆 동네를 고르고 그래프를 눌러 보세요.";return}
-  $("pick").innerHTML="📍 <b>"+dayLabel(day)+"</b><br>"+sel.map(function(i,n){
-    var v=R[i].v[day];return '<span style="color:'+SELC[n]+';font-weight:800">'+NUM[n]+" "+esc(nm(i))+"</span> "+(v==null?"측정값 없음":v+"㎍/㎥")}).join(" · ");
+  $("pick").innerHTML="📍 <b>"+dayLabel(day)+"</b><br>"+sel.map(function(i){
+    var v=R[i].v[day];return '<span style="color:'+rc(i)+';font-weight:800">'+rn(i)+" "+esc(nm(i))+"</span> "+(v==null?"측정값 없음":v+"㎍/㎥")}).join(" · ");
 }
 
 /* ---------- 꺾은선그래프 ---------- */
-var CH={};
+var CH={},CH2={};
 function nice(lo,hi,n){var span=hi-lo,st=Math.pow(10,Math.floor(Math.log10(span/n))),e=span/n/st;st*=e>=5?10:e>=2?5:e>=1.5?2:1;
   var t=[];for(var v=Math.floor(lo/st)*st;v<=Math.ceil(hi/st)*st+st/2;v+=st)t.push(Math.round(v));return {lo:t[0],hi:t[t.length-1],ticks:t}}
-function drawChart(target){
-  var cv=target||$("chart"),W=target?1100:cv.parentElement.clientWidth-16;
-  if(W<=0)return;
-  var H=target?440:Math.round(Math.max(300,Math.min(440,W*0.6)));
-  var dpr=target?1:(window.devicePixelRatio||1);
-  cv.width=W*dpr;cv.height=H*dpr;if(!target)cv.style.height=H+"px";
+/* opt: {cv, list(그릴 동네), stars(★ 날), exportW, exportH, showDay} */
+function drawChart(opt){
+  opt=opt||{};var cv=opt.cv||$("chart"),ex=!!opt.exportW,list=opt.list||sel,stars=opt.stars||[],showDay=opt.showDay!==false&&!opt.list;
+  var W=ex?opt.exportW:cv.parentElement.clientWidth-16;if(W<=0)return null;
+  var H=ex?opt.exportH:Math.round(Math.max(280,Math.min(420,W*0.55)));
+  var dpr=ex?1:(window.devicePixelRatio||1);
+  cv.width=W*dpr;cv.height=H*dpr;if(!ex)cv.style.height=H+"px";
   var c=cv.getContext("2d");c.setTransform(dpr,0,0,dpr,0,0);c.fillStyle="#fff";c.fillRect(0,0,W,H);
-  if(!sel.length){c.fillStyle="#5b6b7c";c.font="bold 20px "+FONT;c.textAlign="center";c.textBaseline="middle";c.fillText("지도에서 동네를 고르면 여기에 선이 생겨요",W/2,H/2);return}
-  // 범례 (줄바꿈)
+  if(!list.length){c.fillStyle="#5b6b7c";c.font="bold 20px "+FONT;c.textAlign="center";c.textBaseline="middle";c.fillText(opt.empty||"지도에서 동네를 고르면 여기에 선이 생겨요",W/2,H/2);return null}
   c.font="bold 15px "+FONT;var lx=70,ly=14,items=[];
-  sel.forEach(function(i,n){var t=NUM[n]+" "+nm(i),w=c.measureText(t).width+44;if(lx+w>W-10){lx=70;ly+=24}items.push([lx,ly,t,n]);lx+=w});
-  items.forEach(function(it){c.fillStyle=SELC[it[3]];c.fillRect(it[0],it[1]+6,24,5);c.fillStyle="#1f2d3d";c.textAlign="left";c.textBaseline="middle";c.fillText(it[2],it[0]+30,it[1]+9)});
+  list.forEach(function(i){var t=rn(i)+" "+nm(i),w=c.measureText(t).width+44;if(lx+w>W-10){lx=70;ly+=24}items.push([lx,ly,t,i]);lx+=w});
+  items.forEach(function(it){c.fillStyle=rc(it[3]);c.fillRect(it[0],it[1]+6,24,5);c.fillStyle="#1f2d3d";c.textAlign="left";c.textBaseline="middle";c.fillText(it[2],it[0]+30,it[1]+9)});
   var L=70,Rm=18,T=ly+40,B=46,pw=W-L-Rm,ph=H-T-B;
-  if(!target)CH={L:L,pw:pw};
-  var hi=100;sel.forEach(function(i){R[i].v.forEach(function(v){if(v!=null&&v>hi)hi=v})});
+  var hi=100;list.forEach(function(i){R[i].v.forEach(function(v){if(v!=null&&v>hi)hi=v})});
   var yr=nice(0,Math.max(hi,100),5),Y=function(v){return T+ph-(v-yr.lo)/(yr.hi-yr.lo)*ph},X=function(i){return L+i*pw/(N-1)};
-  var bt=Y(Math.min(150,yr.hi)),bb=Y(81);c.fillStyle="rgba(239,68,68,.10)";c.fillRect(L,bt,pw,bb-bt);
-  if(yr.hi>150){c.fillStyle="rgba(239,68,68,.20)";c.fillRect(L,T,pw,Y(150)-T)}
-  c.fillStyle="#c0392b";c.font="bold 14px "+FONT;c.textAlign="right";c.textBaseline="top";c.fillText("나쁨 (81~150)",L+pw-6,bt+5);
+  var bt=Y(Math.min(150,yr.hi)),bb=Y(81);c.fillStyle="rgba(239,68,68,.08)";c.fillRect(L,bt,pw,bb-bt);
+  if(yr.hi>150){c.fillStyle="rgba(239,68,68,.16)";c.fillRect(L,T,pw,Y(150)-T)}
+  c.fillStyle="#c0392b";c.font="bold 14px "+FONT;c.textAlign="left";c.textBaseline="bottom";c.fillText("나쁨 (81~150)",L+6,bb-4);
   c.font="14px "+FONT;c.textAlign="right";c.textBaseline="middle";
   yr.ticks.forEach(function(t){var y=Y(t);c.strokeStyle="#edf2f7";c.lineWidth=1;c.beginPath();c.moveTo(L,y);c.lineTo(L+pw,y);c.stroke();c.fillStyle="#5b6b7c";c.fillText(t,L-8,y)});
   c.strokeStyle="#9fb3c8";c.lineWidth=2;c.beginPath();c.moveTo(L,T);c.lineTo(L,T+ph);c.lineTo(L+pw,T+ph);c.stroke();
   c.textAlign="center";c.textBaseline="top";c.fillStyle="#5b6b7c";
   for(var i=0;i<N;i+=7)c.fillText(short(i),X(i),T+ph+8);
   c.save();c.translate(16,T+ph/2);c.rotate(-Math.PI/2);c.textAlign="center";c.textBaseline="middle";c.fillStyle="#1f2d3d";c.font="bold 15px "+FONT;c.fillText("미세먼지(㎍/㎥)",0,0);c.restore();
-  var xd=X(day);c.save();c.setLineDash([6,5]);c.strokeStyle="#7b61ff";c.lineWidth=2;c.beginPath();c.moveTo(xd,T);c.lineTo(xd,T+ph);c.stroke();c.restore();
-  c.fillStyle="#7b61ff";c.font="bold 14px "+FONT;c.textAlign=xd>L+pw-60?"right":(xd<L+60?"left":"center");c.textBaseline="bottom";c.fillText(short(day),xd,T-4);
-  sel.forEach(function(ri,n){
-    var v=R[ri].v;c.strokeStyle=SELC[n];c.lineWidth=3;c.lineJoin="round";c.beginPath();var pen=false;
+  stars.forEach(function(d){ // 아이가 찾은 날 ★
+    var x=X(d);c.fillStyle="rgba(250,204,21,.28)";c.fillRect(x-6,T,12,ph);
+    c.fillStyle="#ca8a04";c.font="bold 20px "+FONT;c.textAlign="center";c.textBaseline="top";c.fillText("★",x,T+2);
+  });
+  if(showDay){
+    var xd=X(day);c.save();c.setLineDash([6,5]);c.strokeStyle="#7b61ff";c.lineWidth=2;c.beginPath();c.moveTo(xd,T);c.lineTo(xd,T+ph);c.stroke();c.restore();
+    c.fillStyle="#7b61ff";c.font="bold 14px "+FONT;c.textAlign=xd>L+pw-60?"right":(xd<L+60?"left":"center");c.textBaseline="bottom";c.fillText(short(day),xd,T-4);
+  }
+  list.forEach(function(ri){
+    var v=R[ri].v,col=rc(ri);c.strokeStyle=col;c.lineWidth=3;c.lineJoin="round";c.beginPath();var pen=false;
     for(var i=0;i<N;i++){if(v[i]==null){pen=false;continue}if(pen)c.lineTo(X(i),Y(v[i]));else{c.moveTo(X(i),Y(v[i]));pen=true}}
     c.stroke();
-    for(var j=0;j<N;j++){if(v[j]==null)continue;c.fillStyle=SELC[n];c.beginPath();c.arc(X(j),Y(v[j]),j===day?6:2.5,0,7);c.fill();
-      if(j===day){c.strokeStyle="#fff";c.lineWidth=2;c.stroke()}}
+    for(var j=0;j<N;j++){if(v[j]==null)continue;var big=showDay&&j===day;c.fillStyle=col;c.beginPath();c.arc(X(j),Y(v[j]),big?6:2.5,0,7);c.fill();
+      if(big){c.strokeStyle="#fff";c.lineWidth=2;c.stroke()}}
   });
+  var lay={L:L,pw:pw};if(!ex){if(cv.id==="chart")CH=lay;else CH2=lay}
+  return lay;
 }
 $("chart").addEventListener("click",function(e){
-  if(!sel.length)return;var rc=this.getBoundingClientRect(),x=e.clientX-rc.left;
+  if(!sel.length||!CH.pw)return;var rc0=this.getBoundingClientRect(),x=e.clientX-rc0.left;
   stop();setDay(Math.round((x-CH.L)/CH.pw*(N-1)));
 });
 
@@ -503,7 +592,6 @@ function setDay(i){
   day=Math.max(0,Math.min(N-1,i));
   $("slider").value=day;$("dayLabel").textContent=dayLabel(day);
   CM.fill();drawChart();updatePick();
-  document.querySelectorAll("#rows .pickday").forEach(function(b){b.textContent=dayLabel(day)+" 고르기"});
 }
 $("prev").addEventListener("click",function(){stop();setDay(day-1)});
 $("next").addEventListener("click",function(){stop();setDay(day+1)});
@@ -518,65 +606,64 @@ $("play").addEventListener("click",function(){
 $("legend").innerHTML=[1,2,3,4,0].map(function(g){return '<span><i style="background:'+GCOL[g]+'"></i>'+GNAME[g]+'</span>'}).join("");
 
 /* ---------- 1단계 예상 ---------- */
-var predLocked=false;
+var pred={near:null,cross:null},predLocked=false;
+document.querySelectorAll(".choose").forEach(function(g){
+  g.addEventListener("click",function(e){
+    var b=e.target.closest("button");if(!b||predLocked)return;
+    pred[g.getAttribute("data-p")]=b.getAttribute("data-v");
+    g.querySelectorAll("button").forEach(function(x){x.classList.toggle("on",x===b)});showPred();
+  });
+});
 function lockPred(){
-  if(predLocked||(!$("pA").value.trim()&&!$("pB").value.trim()))return;
-  predLocked=true;$("pA").readOnly=true;$("pB").readOnly=true;
+  if(predLocked||(!pred.near&&!pred.cross&&!$("pR").value.trim()))return;
+  predLocked=true;document.querySelectorAll(".choose button").forEach(function(b){b.disabled=true});$("pR").readOnly=true;
   $("predNote").textContent="🔒 예상을 잠갔어요. 3단계에서 다시 볼 수 있어요.";
 }
+function predWord(v,last){var e=last?"것 같아요.":"것 같고,";return v==="비슷"?"변화가 비슷할 "+e:v==="다름"?"변화가 다를 "+e:"(고르지 않았어요)"+(last?"":",")}
 function predText(){
-  var a=$("pA").value.trim(),b=$("pB").value.trim();
-  if(!a&&!b)return "(예상을 쓰지 않았어요)";
-  return "어느 동네의 미세먼지가 높은 날, 맞닿은 옆 동네는 "+(a||"(     )")+" 것 같고, 다른 시·도에 있는 동네는 "+(b||"(     )")+" 것 같아요.";
+  if(!pred.near&&!pred.cross&&!$("pR").value.trim())return "(예상을 고르지 않았어요)";
+  var t="① 기준 동네의 선과 견주면, 맞닿은 옆 동네의 선은 "+predWord(pred.near)+" 경계선 건너 옆 동네의 선은 "+predWord(pred.cross,true);
+  var r=$("pR").value.trim();if(r)t+=" (까닭: "+r.replace(/[.。]+$/,"")+")";
+  return t;
 }
 function showPred(){$("predShow").textContent=predText()}
-["pA","pB"].forEach(function(id){$(id).addEventListener("input",showPred)});
+$("pR").addEventListener("input",showPred);
 
-/* ---------- 3단계: 본 것 두 줄 ---------- */
-var PS={};
-function pairs(){
-  var out={near:null,far:null};if(sel.length<2)return out;
-  var a=sel[0],rest=sel.slice(1);
-  var nearI=rest.filter(function(i){return isAdj(a,i)})[0];
-  if(nearI!=null)out.near={tag:"맞닿은 옆 동네",a:a,b:nearI};
-  var farI=rest.filter(function(i){return otherSido(a,i)&&i!==nearI})[0];
-  if(farI!=null)out.far={tag:"다른 시·도 동네",a:a,b:farI};
-  return out;
+/* ---------- 3단계: 두 선씩 견주기 ---------- */
+var CMP_K=["near","cross"],CMP_ROLE={near:1,cross:2},CMP_EMO={near:"🟨",cross:"🩷"};
+var CS={},active="near";
+function pairOf(c){var b=slot[CMP_ROLE[c]];return (slot[0]!=null&&b!=null)?{a:slot[0],b:b}:null}
+function cst(c){var p=pairOf(c);if(!p)return null;var k=p.a+"-"+p.b;return CS[k]||(CS[k]={stars:[],text:""})}
+function pairTitle(c){var p=pairOf(c);return NUM[0]+" "+nm(p.a)+" ↔ "+NUM[CMP_ROLE[c]]+" "+nm(p.b)}
+function renderCmp(){
+  if(!pairOf(active)&&pairOf(active==="near"?"cross":"near"))active=active==="near"?"cross":"near";
+  $("cmpBtns").innerHTML=CMP_K.map(function(c){
+    var p=pairOf(c);
+    return '<button type="button" class="cmpb '+c+(c===active&&p?" on":"")+'" data-c="'+c+'"'+(p?"":" disabled")+'>'+CMP_EMO[c]+" "+(p?esc(pairTitle(c)):NUM[0]+" ↔ "+NUM[CMP_ROLE[c]])+
+      '<small>'+ROLE_N[CMP_ROLE[c]]+(p?" · "+kmText(km(p.a,p.b)):" · 2단계에서 아직 안 골랐어요")+'</small></button>';
+  }).join("");
+  $("cmpRows").innerHTML=CMP_K.map(function(c){
+    var p=pairOf(c),col=ROLEC[CMP_ROLE[c]];
+    if(!p)return '<div class="crow" style="border-left-color:'+col+'"><div class="rh">'+CMP_EMO[c]+" "+ROLE_N[CMP_ROLE[c]]+'</div><p class="empty">2단계에서 '+(c==="near"?"노란색":"분홍색")+' 동네를 고르면 쓸 수 있어요.</p></div>';
+    var s=cst(c);
+    return '<div class="crow" data-c="'+c+'" style="border-left-color:'+col+'"><div class="rh">'+CMP_EMO[c]+" "+esc(pairTitle(c))+'<span class="stars" data-cnt="'+c+'">★ '+s.stars.length+'개</span></div>'+
+      '<div class="sent"><span>✏️ 두 선의 변화는</span><input class="long ctext" value="'+esc(s.text)+'" placeholder="그래프를 보고 써요"><span>.</span></div></div>';
+  }).join("");
+  drawCmp();
 }
-function plist(){var P=pairs();return [P.near,P.far].filter(Boolean)}
-function pkey(p){return p.a+"-"+p.b}
-function st(p){var k=pkey(p);return PS[k]||(PS[k]={day:null,text:""})}
-function numOf(i){return NUM[sel.indexOf(i)]}
-function dayVals(p,d){
-  var va=R[p.a].v[d],vb=R[p.b].v[d];
-  return dayLabel(d)+" · "+nm(p.a)+" "+(va==null?"측정값 없음":va)+" · "+nm(p.b)+" "+(vb==null?"측정값 없음":vb);
+function drawCmp(){
+  var p=pairOf(active),s=cst(active);
+  drawChart({cv:$("cmpChart"),list:p?[p.a,p.b]:[],stars:s?s.stars:[],empty:"2단계에서 동네를 고르면 두 선이 나와요"});
 }
-function stem(p){return nm(p.a)+josa(nm(p.a),"와","과")+" "+nm(p.b)+"의 미세먼지는"}
-function badge(p){var t=[];t.push(kmText(km(p.a,p.b)));return t.join(" · ")+(otherSido(p.a,p.b)?'<small>🚧 시·도 경계를 넘어요</small>':'')}
-function renderRows(){
-  var P=pairs(),box=$("rows"),h="";
-  if(sel.length<2){box.innerHTML='<p class="emptyrow">2단계에서 동네를 고르면 여기에 줄이 생겨요.</p>';return}
-  [["near","맞닿은 옆 동네","2단계에서 ①과 맞닿은 동네(노란색)를 고르면 이 줄이 생겨요."],["far","다른 시·도 동네","2단계에서 ①과 다른 시·도에 있는 동네를 고르면 이 줄이 생겨요."]].forEach(function(q){
-    var p=P[q[0]];
-    if(!p){h+='<div class="row1"><div class="rh"><span class="tag">'+q[1]+'</span></div><p class="emptyrow">'+q[2]+'</p></div>';return}
-    var s=st(p);
-    h+='<div class="row1" data-k="'+q[0]+'">'+
-      '<div class="rh"><span class="tag">'+q[1]+'</span>'+numOf(p.a)+esc(nm(p.a))+' ↔ '+numOf(p.b)+esc(nm(p.b))+' · '+badge(p)+'</div>'+
-      '<div class="dayline">📅 두 동네를 견주기 좋은 날: <b>'+(s.day==null?"아직 안 골랐어요":esc(dayVals(p,s.day)))+'</b>'+
-      '<button type="button" class="btn ghost pickday">'+dayLabel(day)+' 고르기</button></div>'+
-      '<p class="note" style="margin:2px 0 6px">2단계 그래프를 눌러 날을 바꾼 다음 [고르기]를 눌러요.</p>'+
-      '<div class="sent"><span>✏️ '+esc(stem(p))+'</span><input class="long rowtext" placeholder="그래프에서 본 대로" value="'+esc(s.text)+'"><span>.</span></div>'+
-    '</div>';
-  });
-  box.innerHTML=h;
-}
-$("rows").addEventListener("click",function(e){
-  var b=e.target.closest(".pickday");if(!b)return;
-  var p=pairs()[b.closest(".row1").getAttribute("data-k")];st(p).day=day;renderRows();
+$("cmpBtns").addEventListener("click",function(e){var b=e.target.closest(".cmpb");if(!b||b.disabled)return;active=b.getAttribute("data-c");renderCmp()});
+$("cmpChart").addEventListener("click",function(e){
+  var s=cst(active);if(!s||!CH2.pw)return;
+  var r0=this.getBoundingClientRect(),d=Math.round((e.clientX-r0.left-CH2.L)/CH2.pw*(N-1));if(d<0||d>=N)return;
+  var j=s.stars.indexOf(d);if(j>=0)s.stars.splice(j,1);else s.stars.push(d);s.stars.sort(function(x,y){return x-y});
+  drawCmp();var cnt=document.querySelector('[data-cnt="'+active+'"]');if(cnt)cnt.textContent="★ "+s.stars.length+"개";
 });
-$("rows").addEventListener("input",function(e){
-  if(!e.target.classList.contains("rowtext"))return;
-  st(pairs()[e.target.closest(".row1").getAttribute("data-k")]).text=e.target.value;
+$("cmpRows").addEventListener("input",function(e){
+  if(!e.target.classList.contains("ctext"))return;var c=e.target.closest(".crow").getAttribute("data-c");cst(c).text=e.target.value;
 });
 function updJosa(){$("jT").textContent=rago($("think").value)+" 생각해요."}
 $("think").addEventListener("input",updJosa);
@@ -591,38 +678,39 @@ function wrap(c,text,maxW){
 }
 function mapImage(){
   return new Promise(function(res,rej){
-    var svg=$("colorMap"),cl=svg.cloneNode(true),w=760,h=Math.round(w*D.H/D.W),full=[0,0,D.W,D.H];
+    var svg=$("colorMap"),cl=svg.cloneNode(true),w=760,h=Math.round(w*NV[3]/NV[2]),full=NV.slice();
     cl.setAttribute("xmlns",NS);cl.setAttribute("width",w);cl.setAttribute("height",h);cl.setAttribute("viewBox",full.join(" "));
-    CM.overlay(D.W/w*1.15,full,{root:cl});
+    CM.overlay(NV[2]/w*1.15,full,{root:cl});
     var img=new Image();img.onload=function(){res({img:img,w:w,h:h})};img.onerror=rej;
     img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(new XMLSerializer().serializeToString(cl));
   });
 }
 $("saveBtn").addEventListener("click",function(){
-  if(sel.length<2){msg("2단계에서 동네를 두 곳 이상 먼저 골라 주세요.");return}
+  if(!pairOf("near")&&!pairOf("cross")){msg("2단계에서 ①과 노란색·분홍색 동네를 먼저 골라 주세요.");return}
   if(!$("think").value.trim()){msg("3단계 💭 내 생각 칸을 먼저 써 주세요.");$("think").scrollIntoView({behavior:"smooth",block:"center"});return}
   msg("그림을 만들고 있어요…",true);
   mapImage().then(function(M){
     var Wd=1200,P=44,inner=Wd-P*2;
-    var chartCv=document.createElement("canvas");drawChart(chartCv);
+    var pc=CMP_K.filter(function(c){return pairOf(c)}).map(function(c){
+      var p=pairOf(c),s=cst(c),cv0=document.createElement("canvas");
+      drawChart({cv:cv0,list:[p.a,p.b],stars:s.stars,exportW:1100,exportH:340});
+      return {c:c,cv:cv0,title:CMP_EMO[c]+" "+pairTitle(c)+" · "+ROLE_N[CMP_ROLE[c]]+" · "+kmText(km(p.a,p.b))+" · 함께 높은 값 ★ "+s.stars.length+"개"};
+    });
     var c0=document.createElement("canvas").getContext("2d"),lines=[];
     function add(t,font,col,gap){c0.font=font;wrap(c0,t,inner-48).forEach(function(l){lines.push([l,font,col])});if(gap)lines.push(["",font,col,gap])}
     add("🤔 내 예상","bold 28px "+FONT,"#7b61ff");
     add(predText(),"24px "+FONT,"#1f2d3d",14);
     add("👀 내가 본 것","bold 28px "+FONT,"#b7791f");
-    var PP=pairs();
-    [["near","맞닿은 옆 동네"],["far","다른 시·도 동네"]].forEach(function(q){
-      var p=PP[q[0]];if(!p)return;var s1=st(p);
-      add("["+q[1]+"] "+numOf(p.a)+nm(p.a)+" ↔ "+numOf(p.b)+nm(p.b)+" · "+kmText(km(p.a,p.b))+(otherSido(p.a,p.b)?" · 🚧 시·도 경계를 넘어요":""),"bold 22px "+FONT,"#5b6b7c");
-      add("📅 "+(s1.day==null?"견주기 좋은 날을 고르지 않았어요":dayVals(p,s1.day)),"22px "+FONT,"#5b6b7c");
-      add(stem(p)+" "+(s1.text.trim()?s1.text.trim().replace(/[.。]+$/,""):"(          )")+".","26px "+FONT,"#1f2d3d",10);
+    pc.forEach(function(q){
+      add(CMP_EMO[q.c]+" "+pairTitle(q.c)+" (★ "+cst(q.c).stars.length+"개)","bold 22px "+FONT,"#5b6b7c");
+      add("두 선의 변화는 "+(cst(q.c).text.trim()?cst(q.c).text.trim().replace(/[.。]+$/,""):"(          )")+".","26px "+FONT,"#1f2d3d",10);
     });
     lines.push(["","26px "+FONT,"#1f2d3d",8]);
     add("💭 내 생각","bold 28px "+FONT,"#2f80ed");
     add("그래서 나는 "+val("think")+rago($("think").value)+" 생각해요.","26px "+FONT,"#1f2d3d");
     var textH=lines.reduce(function(s,l){return s+(l[3]||42)},0)+40;
     var mapW=620,mapH=Math.round(M.h*mapW/M.w);
-    var H=120+48+Math.max(mapH,420)+30+40+chartCv.height+30+textH+30+90;
+    var H=120+48+Math.max(mapH,420)+30+pc.reduce(function(t,q){return t+40+q.cv.height+24},0)+textH+30+90;
     var cv=document.createElement("canvas");cv.width=Wd;cv.height=H;
     var c=cv.getContext("2d");c.fillStyle="#fff";c.fillRect(0,0,Wd,H);
     var d=new Date(),today=d.getFullYear()+". "+(d.getMonth()+1)+". "+d.getDate()+".",who=$("who").value.trim();
@@ -634,15 +722,18 @@ $("saveBtn").addEventListener("click",function(){
     c.fillStyle="#1f2d3d";c.font="bold 22px "+FONT;c.fillText("색깔의 뜻",rx,ry);ry+=36;
     [1,2,3,4,0].forEach(function(g){c.fillStyle=GCOL[g];c.fillRect(rx,ry,24,24);c.fillStyle="#1f2d3d";c.font="20px "+FONT;c.fillText(GNAME[g],rx+34,ry+1);ry+=34});
     ry+=20;c.font="bold 22px "+FONT;c.fillText("고른 동네",rx,ry);ry+=36;
-    sel.forEach(function(i,n){
-      c.fillStyle=SELC[n];c.beginPath();c.arc(rx+12,ry+12,12,0,7);c.fill();c.fillStyle="#fff";c.font="bold 16px "+FONT;c.textAlign="center";c.fillText(String(n+1),rx+12,ry+3);c.textAlign="left";
+    sel.forEach(function(i){
+      var k=roleOf(i);
+      c.fillStyle=rc(i);c.beginPath();c.arc(rx+12,ry+12,12,0,7);c.fill();c.fillStyle="#fff";c.font="bold 16px "+FONT;c.textAlign="center";c.fillText(String(k+1),rx+12,ry+3);c.textAlign="left";
       c.fillStyle="#1f2d3d";c.font="20px "+FONT;c.fillText(nm(i),rx+34,ry+1);
-      var v=R[i].v[day];c.fillStyle="#5b6b7c";c.font="18px "+FONT;
-      c.fillText((v==null?"측정값 없음":v+"㎍/㎥")+(n>0?" · ①에서 "+kmText(km(sel[0],i)):""),rx+34,ry+28);ry+=62;
+      c.fillStyle="#5b6b7c";c.font="18px "+FONT;
+      c.fillText(ROLE_N[k]+(k>0?" · ①에서 "+kmText(km(slot[0],i)):""),rx+34,ry+28);ry+=62;
     });
     y+=Math.max(mapH,420)+30;
-    c.fillStyle="#5b6b7c";c.font="bold 24px "+FONT;c.fillText("📊 고른 동네의 꺾은선그래프",P,y);y+=40;
-    c.drawImage(chartCv,P+(inner-chartCv.width)/2,y);y+=chartCv.height+30;
+    pc.forEach(function(q){
+      c.fillStyle="#5b6b7c";c.font="bold 22px "+FONT;c.textBaseline="top";c.textAlign="left";c.fillText(q.title,P,y);y+=40;
+      c.drawImage(q.cv,P+(inner-q.cv.width)/2,y);y+=q.cv.height+24;
+    });
     c.fillStyle="#f4f8fb";c.fillRect(P,y,inner,textH);var ty=y+24;
     lines.forEach(function(l){c.font=l[1];c.fillStyle=l[2];c.fillText(l[0],P+24,ty);ty+=(l[3]||42)});
     y+=textH+24;
@@ -659,7 +750,7 @@ $("saveBtn").addEventListener("click",function(){
 });
 
 /* ---------- 시작 ---------- */
-var rt;window.addEventListener("resize",function(){clearTimeout(rt);rt=setTimeout(function(){PM.overlay(PM.k(),PM.vb);CM.overlay(CM.k(),CM.vb);MM.overlay(MM.k(),MM.vb);drawChart()},150)});
+var rt;window.addEventListener("resize",function(){clearTimeout(rt);rt=setTimeout(function(){PM.overlay(PM.k(),PM.vb);CM.overlay(CM.k(),CM.vb);MM.overlay(MM.k(),MM.vb);drawChart();drawCmp()},150)});
 setView(null);setDay(0);refreshSel();showPred();
 })();
 </script>
